@@ -19,6 +19,16 @@ namespace XStateNet
         /// </summary>
         private List<InvokeServiceAsyncDelegate> _serviceDelegates;
 
+        /// <summary>
+        /// Actions invoked on state enter before all services has started. Services are not executed until all enter actions are finalized.
+        /// </summary>
+        private Action _onEnterActions;
+
+        /// <summary>
+        /// Actions invoked on state exit after all services has finished.
+        /// </summary>
+        private Action _onExitActions;
+
         private Dictionary<string, string> _transitions;
 
         public Dictionary<string, string> Transitions { get { return _transitions; } }
@@ -74,6 +84,49 @@ namespace XStateNet
         public State WithTransition(string eventId, string targetStateId)
         {
             _transitions.Add(eventId, targetStateId);
+            return this;
+        }
+
+
+        /// <summary>
+        /// Adds actions to be executed when state enters and before the services.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public State WithActionOnEnter(Action action)
+        {
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            if(_onEnterActions is null)
+            {
+                _onEnterActions = action;
+            } else {
+                _onEnterActions += action;
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Adds actions to be executed when state exits and before the transition to the next state.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public State WithActionOnExit(Action action)
+        {
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            if(_onExitActions is null)
+            {
+                _onExitActions = action;
+            } else {
+                _onExitActions += action;
+            }
             return this;
         }
     }
