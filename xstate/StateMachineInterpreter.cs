@@ -57,8 +57,8 @@ namespace XStateNet
                 }
 
                 // execute on exit actions before moving to the next state
-                cleanUpActions.ForEach(a => {
-                    a();
+                cleanUpActions.ForEach(cleanUpAction => {
+                    cleanUpAction();
                 });
 
                 // invoke next state
@@ -69,9 +69,7 @@ namespace XStateNet
 
             // execute all services in parallel
             state.ServiceDelegates.ForEach(d => {
-                Task.Run(() => {
-                    cleanUpActions.Add(d(state, callback));
-                });
+                cleanUpActions.Add(d(state, callback));
             });
 
             
