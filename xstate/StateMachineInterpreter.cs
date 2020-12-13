@@ -61,14 +61,19 @@ namespace XStateNet
                     cleanUpAction();
                 });
 
+                // invoke on exit actions
+                state.InvokeExitActions();
+
                 // invoke next state
                 Invoke(nextState);
             });
 
             // execute all on entry actions one by one
+            state.InvokeEnterActions();
 
             // execute all services in parallel
             state.ServiceDelegates.ForEach(d => {
+                // each service returns the destructor action, store them to execute on state exit.
                 cleanUpActions.Add(d(state, callback));
             });
 

@@ -64,6 +64,28 @@ namespace XStateNet
         }
 
         /// <summary>
+        /// Invokes actions registered on enter.
+        /// </summary>
+        internal void InvokeEnterActions()
+        {
+            if (_onEnterActions != null)
+            {
+                _onEnterActions();
+            }
+        }
+
+        /// <summary>
+        /// Invokes actions registered on exit.
+        /// </summary>
+        internal void InvokeExitActions()
+        {
+            if (_onExitActions != null)
+            {
+                _onExitActions();
+            }
+        }
+
+        /// <summary>
         /// Invokes the service as async method.
         /// </summary>
         /// <param name="invoke">The service to invoke.</param>
@@ -100,10 +122,12 @@ namespace XStateNet
                 throw new ArgumentNullException(nameof(action));
             }
 
-            if(_onEnterActions is null)
+            if (_onEnterActions is null)
             {
                 _onEnterActions = action;
-            } else {
+            }
+            else
+            {
                 _onEnterActions += action;
             }
             return this;
@@ -121,10 +145,12 @@ namespace XStateNet
                 throw new ArgumentNullException(nameof(action));
             }
 
-            if(_onExitActions is null)
+            if (_onExitActions is null)
             {
                 _onExitActions = action;
-            } else {
+            }
+            else
+            {
                 _onExitActions += action;
             }
             return this;
