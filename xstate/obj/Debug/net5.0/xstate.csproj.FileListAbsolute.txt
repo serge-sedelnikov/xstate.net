@@ -1,0 +1,12 @@
+C:\Users\serge\Source\xstate.net\xstate\bin\Debug\net5.0\xstate.deps.json
+C:\Users\serge\Source\xstate.net\xstate\bin\Debug\net5.0\xstate.dll
+C:\Users\serge\Source\xstate.net\xstate\bin\Debug\net5.0\ref\xstate.dll
+C:\Users\serge\Source\xstate.net\xstate\bin\Debug\net5.0\xstate.pdb
+C:\Users\serge\Source\xstate.net\xstate\obj\Debug\net5.0\xstate.csprojAssemblyReference.cache
+C:\Users\serge\Source\xstate.net\xstate\obj\Debug\net5.0\xstate.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\serge\Source\xstate.net\xstate\obj\Debug\net5.0\xstate.AssemblyInfoInputs.cache
+C:\Users\serge\Source\xstate.net\xstate\obj\Debug\net5.0\xstate.AssemblyInfo.cs
+C:\Users\serge\Source\xstate.net\xstate\obj\Debug\net5.0\xstate.csproj.CoreCompileInputs.cache
+C:\Users\serge\Source\xstate.net\xstate\obj\Debug\net5.0\xstate.dll
+C:\Users\serge\Source\xstate.net\xstate\obj\Debug\net5.0\ref\xstate.dll
+C:\Users\serge\Source\xstate.net\xstate\obj\Debug\net5.0\xstate.pdb
