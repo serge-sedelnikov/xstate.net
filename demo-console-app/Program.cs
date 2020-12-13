@@ -45,8 +45,10 @@ namespace demo_console_app
             var yellowLightState = new State("showingYellowLight");
 
             // define the OnEnter actions
-            yellowLightState.WithActionOnEnter(() => {
-                
+            yellowLightState.WithActionOnEnter(() =>
+            {
+                Console.WriteLine("Cleaning the user input");
+                _userInput = null;
             })
 
             // define transition events and state names
@@ -62,18 +64,25 @@ namespace demo_console_app
                 CancellationTokenSource cancelSource = new CancellationTokenSource();
                 var ct = cancelSource.Token;
 
-                var t1 = Task.Run(() =>
-                {   
-                    var color = _userInput;
-                    if(cancelSource.IsCancellationRequested){
-                        Console.WriteLine("Keyboard red cancelled");
-                        return;
-                    }
-                    if (color == "red")
+                var t1 = Task.Run(async () =>
+                {
+                    while (true)
                     {
-                        cancelSource.Cancel();
-                        callback("MANUAL_YELLOW_TO_RED_SWITCH");
+                        if (cancelSource.IsCancellationRequested)
+                        {
+                            Console.WriteLine("Keyboard red cancelled");
+                            return;
+                        }
+
+                        var color = _userInput;
+                        if (color == "red")
+                        {
+                            cancelSource.Cancel();
+                            callback("MANUAL_YELLOW_TO_RED_SWITCH");
+                        }
+                        await Task.Delay(500);
                     }
+
                 }, cancelSource.Token);
 
                 return () =>
@@ -90,7 +99,8 @@ namespace demo_console_app
                 var t2 = Task.Run(async () =>
                 {
                     await Task.Delay(TimeSpan.FromSeconds(20), cancelSource.Token);
-                    if(cancelSource.Token.IsCancellationRequested){
+                    if (cancelSource.Token.IsCancellationRequested)
+                    {
                         return;
                     }
                     callback("YELLOW_TIMEOUT_20000");
@@ -114,16 +124,23 @@ namespace demo_console_app
 
             // start state machine
             var interpreter = new Interpreter();
+            interpreter.OnStateChanged += OnStateChanged;
             interpreter.StartStateMachine(machine);
 
 
             // try to get user input to be used in state machine
-            while(true)
+            while (true)
             {
                 // this should block main thread, but state machine
                 // is executed and interpreted in own thread.
                 _userInput = Console.ReadLine();
             }
+        }
+
+        private static void OnStateChanged(object sender, StateChangeEventArgs args)
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"======= State changed from '{args.PreviousState?.Id ?? "NULL"}' to '{args.State.Id}' ==========");
         }
     }
 }
