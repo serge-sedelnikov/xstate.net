@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using XStateNet;
@@ -20,7 +21,19 @@ namespace demo_console_app
             // setting up states for machine
             var redLightState = new State("showingRedLight");
             // adding transitions
-            redLightState.WithTransition("ON_REDLIGHT_DONE", "showingYellowLight")
+            redLightState
+            .WithTransition("ON_REDLIGHT_DONE", "showingYellowLight")
+
+            .WithActionOnEnter(() =>
+            {
+                StackTrace st = new StackTrace();
+                Console.WriteLine();
+                Console.WriteLine(st.FrameCount);
+                var frames = st.GetFrames();
+
+                Console.WriteLine();
+            })
+
             // adding invocation services
             .WithInvoke((s, callback) =>
             {
@@ -32,13 +45,10 @@ namespace demo_console_app
                     await Task.Delay(3000);
                     callback("ON_REDLIGHT_DONE");
                 });
-
-                // return the destructor, this is called when state machine is leaving the state
-                return () =>
-                {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine("Exiting the red light state.");
-                };
+            }, () =>
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("Exiting the red light state.");
             });
 
 
@@ -56,63 +66,25 @@ namespace demo_console_app
             .WithTransition("MANUAL_YELLOW_TO_RED_SWITCH", "showingRedLight")
 
             // define services to invoke
-            .WithInvoke((s, callback) =>
+            .WithInvoke(async (s, callback) =>
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("Entering yellow light. Write 'red' to manually switch to red, or wait for 20 sec.");
 
-                CancellationTokenSource cancelSource = new CancellationTokenSource();
-                var ct = cancelSource.Token;
-
-                var t1 = Task.Run(async () =>
+                while (true)
                 {
-                    while (true)
+                    var color = _userInput;
+                    if (color == "red")
                     {
-                        if (cancelSource.IsCancellationRequested)
-                        {
-                            Console.WriteLine("Keyboard red cancelled");
-                            return;
-                        }
-
-                        var color = _userInput;
-                        if (color == "red")
-                        {
-                            cancelSource.Cancel();
-                            callback("MANUAL_YELLOW_TO_RED_SWITCH");
-                        }
-                        await Task.Delay(500);
+                        callback("MANUAL_YELLOW_TO_RED_SWITCH");
                     }
-
-                }, cancelSource.Token);
-
-                return () =>
-                {
-                    cancelSource.Cancel();
-                    Console.WriteLine(t1.Status);
-                    Console.ForegroundColor = ConsoleColor.White;
-                };
+                    await Task.Delay(500);
+                }
             })
-            .WithInvoke((s, callback) =>
+            .WithInvoke(async (s, callback) =>
             {
-                CancellationTokenSource cancelSource = new CancellationTokenSource();
-
-                var t2 = Task.Run(async () =>
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(20), cancelSource.Token);
-                    if (cancelSource.Token.IsCancellationRequested)
-                    {
-                        return;
-                    }
-                    callback("YELLOW_TIMEOUT_20000");
-                }, cancelSource.Token);
-
-                // destructor
-                return () =>
-                {
-                    cancelSource.Cancel();
-                    Console.WriteLine(t2.Status);
-                    Console.ForegroundColor = ConsoleColor.White;
-                };
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                callback("YELLOW_TIMEOUT_20000");
             });
 
 
