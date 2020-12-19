@@ -80,6 +80,9 @@ namespace demo_console_app
                     }
                     await Task.Delay(500);
                 }
+            }, () => {
+                Console.WriteLine("Exiting yellow state manually, cleaning up RED signal...");
+                _userInput = "";
             })
             .WithInvoke(async (s, callback) =>
             {

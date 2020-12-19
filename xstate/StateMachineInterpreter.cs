@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -78,7 +79,6 @@ namespace XStateNet
 
             Task.Run(() =>
             {
-                
                 Invoke(initialState);
             });
         }
@@ -113,7 +113,7 @@ namespace XStateNet
                 }
 
                 // execute on exit actions before moving to the next state
-                cleanUpActions.ForEach(cleanUpAction =>
+                state.CleanUpActions.ForEach(cleanUpAction =>
                 {
                     cleanUpAction();
                 });
@@ -131,11 +131,8 @@ namespace XStateNet
             // execute all services in parallel
             state.ServiceDelegates.ForEach(d =>
             {
-                // each service returns the destructor action, store them to execute on state exit.
-                cleanUpActions.Add(d(state, callback));
+                d(state, callback);
             });
-
-
         }
     }
 }

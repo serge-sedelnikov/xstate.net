@@ -20,6 +20,11 @@ namespace XStateNet
         private List<InvokeServiceAsyncDelegate> _serviceDelegates;
 
         /// <summary>
+        /// Stores the lost of clean up activities to execute on state exit.
+        /// </summary>
+        private List<Action> _serviviceCleanupDelegates;
+
+        /// <summary>
         /// Actions invoked on state enter before all services has started. Services are not executed until all enter actions are finalized.
         /// </summary>
         private Action _onEnterActions;
@@ -30,6 +35,7 @@ namespace XStateNet
         private Action _onExitActions;
 
         private Dictionary<string, string> _transitions;
+        
 
         public Dictionary<string, string> Transitions { get { return _transitions; } }
 
@@ -43,14 +49,21 @@ namespace XStateNet
         /// List of services to execute.
         /// </summary>
         /// <value></value>
-        public List<InvokeServiceAsyncDelegate> ServiceDelegates { get => _serviceDelegates; }
+        internal List<InvokeServiceAsyncDelegate> ServiceDelegates { get => _serviceDelegates; }
+
+        /// <summary>
+        /// Gets the list of clean up actions to execute on state exit.
+        /// The clean up actions are related to services or activities.
+        /// </summary>
+        /// <value></value>
+        internal List<Action> CleanUpActions { get => _serviviceCleanupDelegates; }
 
         /// <summary>
         /// Service invocation delegate.
         /// </summary>
         /// <param name="state"></param>
         /// <param name="callback"></param>
-        public delegate Action InvokeServiceAsyncDelegate(State state, Action<string> callback);
+        public delegate void InvokeServiceAsyncDelegate(State state, Action<string> callback);
 
         /// <summary>
         /// Creates an instance of the state.
@@ -60,6 +73,7 @@ namespace XStateNet
         {
             this._id = id;
             _serviceDelegates = new List<InvokeServiceAsyncDelegate>();
+            _serviviceCleanupDelegates = new List<Action>();
             _transitions = new Dictionary<string, string>();
         }
 
@@ -90,9 +104,17 @@ namespace XStateNet
         /// </summary>
         /// <param name="invoke">The service to invoke.</param>
         /// <returns></returns>
-        public State WithInvoke(InvokeServiceAsyncDelegate invokeAsync)
+        public State WithInvoke(InvokeServiceAsyncDelegate invokeAsync, Action cleanUpAction = null)
         {
+            // save invoke action to execute
             _serviceDelegates.Add(invokeAsync);
+
+            // save the clean up action if given
+            if(cleanUpAction != null){
+                _serviviceCleanupDelegates.Add(cleanUpAction);
+            }
+            
+
             // return current state to be able to chain up the services.
             return this;
         }
