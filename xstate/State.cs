@@ -70,6 +70,12 @@ namespace XStateNet
         internal List<Action> CleanUpActions { get => _serviviceCleanupDelegates; }
 
         /// <summary>
+        /// List of activities to execute.
+        /// </summary>
+        /// <value></value>
+        public List<Action> Activities { get => _activities; }
+
+        /// <summary>
         /// Service invocation delegate.
         /// </summary>
         /// <param name="state"></param>
@@ -86,7 +92,7 @@ namespace XStateNet
             _serviceDelegates = new List<InvokeServiceAsyncDelegate>();
             _serviviceCleanupDelegates = new List<Action>();
             _transitions = new Dictionary<string, string>();
-            _activities = new List<Action>();
+            Activities = new List<Action>();
         }
 
         /// <summary>
@@ -201,7 +207,7 @@ namespace XStateNet
         {
             if(activity != null)
             {
-                _activities.Add(activity);
+                Activities.Add(activity);
             }
             if(cleanUpAction != null)
             {
