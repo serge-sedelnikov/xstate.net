@@ -25,6 +25,11 @@ namespace XStateNet
         private List<Action> _serviviceCleanupDelegates;
 
         /// <summary>
+        /// Internal list of activities to run in parallel to services.
+        /// </summary>
+        private List<Action> _activities;
+
+        /// <summary>
         /// Actions invoked on state enter before all services has started. Services are not executed until all enter actions are finalized.
         /// </summary>
         private Action _onEnterActions;
@@ -34,9 +39,15 @@ namespace XStateNet
         /// </summary>
         private Action _onExitActions;
 
+        /// <summary>
+        /// Internal list of transitions.
+        /// </summary>
         private Dictionary<string, string> _transitions;
         
-
+        /// <summary>
+        /// List of transitions.
+        /// </summary>
+        /// <value></value>
         public Dictionary<string, string> Transitions { get { return _transitions; } }
 
         /// <summary>
@@ -75,6 +86,7 @@ namespace XStateNet
             _serviceDelegates = new List<InvokeServiceAsyncDelegate>();
             _serviviceCleanupDelegates = new List<Action>();
             _transitions = new Dictionary<string, string>();
+            _activities = new List<Action>();
         }
 
         /// <summary>
@@ -174,6 +186,26 @@ namespace XStateNet
             else
             {
                 _onExitActions += action;
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Registers the activity to run in parallel to services while state is active.
+        /// Activity can't change the state, it can only execute background operations.
+        /// </summary>
+        /// <param name="activity">The activity to run.</param>
+        /// <param name="cleanUpAction">Clean up action to be called when the state machine leaves the state.</param>
+        /// <returns></returns>
+        public State WithActivity(Action activity, Action cleanUpAction = null)
+        {
+            if(activity != null)
+            {
+                _activities.Add(activity);
+            }
+            if(cleanUpAction != null)
+            {
+                _serviviceCleanupDelegates.Add(cleanUpAction);
             }
             return this;
         }

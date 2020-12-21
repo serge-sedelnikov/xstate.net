@@ -98,6 +98,11 @@ namespace XStateNet
             // callback that affects the state change.
             var callback = new Action<string>((string eventId) =>
             {
+                if(!state.Transitions.ContainsKey(eventId))
+                {
+                    return;
+                }
+
                 // check next state
                 var nextStateId = state.Transitions[eventId];
                 if (string.IsNullOrEmpty(nextStateId))
