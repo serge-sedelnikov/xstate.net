@@ -29,6 +29,8 @@ namespace demo_console_app.TrafficLight
                     DrawDefault();
                     break;
             }
+
+            Console.ForegroundColor = ConsoleColor.Gray;
         }
 
         private static void DrawDefault()
