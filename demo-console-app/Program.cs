@@ -9,10 +9,16 @@ namespace demo_console_app
     class Program
     {
         private static string _userInput;
+        private static Stopwatch _stopwatch;
+
+        private static bool _isPrintLoopRunning = false;
 
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
+
+            _stopwatch = new Stopwatch();
+            _stopwatch.Start();           
 
             var redState = new TrafficLight.ShowingRedLight();
             var yellowState = new TrafficLight.ShowingYellowLight();
@@ -21,6 +27,10 @@ namespace demo_console_app
             redState.WithTransition("RED_LIGHT_DONE", yellowState.Id);
             yellowState.WithTransition("YELLOW_LIGHT_DONE", greenState.Id);
             greenState.WithTransition("GREEN_LIGHT_DONE", redState.Id);
+
+            redState.WithActivity(PrintElapsedTime, StopPrintElapsedTime);
+            yellowState.WithActivity(PrintElapsedTime, StopPrintElapsedTime);
+            greenState.WithActivity(PrintElapsedTime, StopPrintElapsedTime);
 
             // creating state machine and setting up initial state ID,
             // as well as machine's ID and name for future usage.
@@ -49,10 +59,30 @@ namespace demo_console_app
             }
         }
 
+        private static void PrintElapsedTime()
+        {
+            _isPrintLoopRunning = true;
+
+            Action runPrintLoop = new Action(async () => {
+                while(_isPrintLoopRunning)
+                {
+                    await Task.Delay(150);
+                    Console.Write($"\r{_stopwatch.Elapsed.ToString()}");
+                }
+            });
+
+            Task.Run(runPrintLoop);
+        }
+
+        private static void StopPrintElapsedTime()
+        {
+            _isPrintLoopRunning = false;
+             _stopwatch.Restart();
+        }
+
         private static void OnStateChanged(object sender, StateChangeEventArgs args)
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($"======= State changed from '{args.PreviousState?.Id ?? "NULL"}' to '{args.State.Id}' ==========");
+            
         }
     }
 }

@@ -98,6 +98,11 @@ namespace XStateNet
             // callback that affects the state change.
             var callback = new Action<string>((string eventId) =>
             {
+                if(!state.Transitions.ContainsKey(eventId))
+                {
+                    return;
+                }
+
                 // check next state
                 var nextStateId = state.Transitions[eventId];
                 if (string.IsNullOrEmpty(nextStateId))
@@ -131,7 +136,15 @@ namespace XStateNet
             // execute all services in parallel
             state.ServiceDelegates.ForEach(d =>
             {
-                d(state, callback);
+                // run the services on own threads
+                Task.Run(() => d(state, callback));
+            });
+
+            // execute all activities in parallel
+            state.Activities.ForEach(d =>
+            {
+                // run the activities in own thread.
+                Task.Run(d);
             });
         }
     }
