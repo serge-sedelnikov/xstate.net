@@ -92,29 +92,17 @@ namespace XStateNet
             // raise state changed event
             RaiseOnStateChangedEvent(state, previousState);
 
-            // store cleanup actions
-            var cleanUpActions = new List<Action>();
-
             // callback that affects the state change.
             var callback = new Action<string>((string eventId) =>
             {
-                if(!state.Transitions.ContainsKey(eventId))
+                if (!state.Transitions.ContainsKey(eventId))
                 {
-                    return;
-                }
-
-                // check next state
-                var nextStateId = state.Transitions[eventId];
-                if (string.IsNullOrEmpty(nextStateId))
-                {
-                    return;
-                }
-
-                // try to find next state to invoke
-                var nextState = _stateMachine.States.FirstOrDefault(s => s.Id == nextStateId);
-                if (nextState == null)
-                {
-                    return;
+                    // if there is no next state to navigate to, and if state is final, we allow it
+                    if (state.Mode == StateMode.Final)
+                    {
+                        // TODO: execute onDone for state machine
+                        return;
+                    }
                 }
 
                 // execute on exit actions before moving to the next state
@@ -126,12 +114,36 @@ namespace XStateNet
                 // invoke on exit actions
                 state.InvokeExitActions();
 
+                // check next state
+                var nextStateId = state.Transitions[eventId];
+                if (string.IsNullOrEmpty(nextStateId))
+                {
+                    // if there is no next state id, warn developer about it
+                    Debug.WriteLine("Transition was called but can't find next state ID for it.", "Warning");
+                    return;
+                }
+
+                // try to find next state to invoke
+                var nextState = _stateMachine.States.FirstOrDefault(s => s.Id == nextStateId);
+                if (nextState == null)
+                {
+                    // if we found next state ID but we could not find the state, thwow exception
+                    throw new InvalidOperationException($"Found next state ID to invoke, but state with such ID was not found. Make sure you registered state with the ID '{nextStateId}'");
+                }
+
                 // invoke next state, provising previous state for event raising
                 Invoke(nextState, state);
             });
 
             // execute all on entry actions one by one
             state.InvokeEnterActions();
+
+            // if state is transient, invoke exit actions and return
+            if(state.Mode == StateMode.Transient)
+            {
+                callback("");
+                return;
+            }
 
             // execute all services in parallel
             state.ServiceDelegates.ForEach(d =>

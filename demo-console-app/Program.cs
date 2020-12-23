@@ -24,13 +24,23 @@ namespace demo_console_app
             var yellowState = new TrafficLight.ShowingYellowLight();
             var greenState = new TrafficLight.ShowingGreenLight();
 
+            // organize transition state
+            State uploadingTrafficLightHealth = new State("uploadingTrafficLightHealth");
+            uploadingTrafficLightHealth.AsTransientState(redState.Id);
+
+            // create transitions on events for states.
             redState.WithTransition("RED_LIGHT_DONE", yellowState.Id);
             yellowState.WithTransition("YELLOW_LIGHT_DONE", greenState.Id);
-            greenState.WithTransition("GREEN_LIGHT_DONE", redState.Id);
+            greenState.WithTransition("GREEN_LIGHT_DONE", uploadingTrafficLightHealth.Id);
 
+            // setup side effect ectivities to print elapsed time.
             redState.WithActivity(PrintElapsedTime, StopPrintElapsedTime);
             yellowState.WithActivity(PrintElapsedTime, StopPrintElapsedTime);
             greenState.WithActivity(PrintElapsedTime, StopPrintElapsedTime);
+
+
+            
+
 
             // creating state machine and setting up initial state ID,
             // as well as machine's ID and name for future usage.
