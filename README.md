@@ -1,3 +1,5 @@
+![build status](https://github.com/serge-sedelnikov/xstate.net/workflows/.NET/badge.svg)
+
 # xstate.net
 .NET implementation of xstate framework for NodeJS (https://github.com/davidkpiano/xstate)
 
