@@ -5,6 +5,25 @@ using System.Threading.Tasks;
 namespace XStateNet
 {
     /// <summary>
+    /// Represents the state type. State has `Normal` type by default.
+    /// </summary>
+    public enum StateMode
+    {
+        /// <summary>
+        /// Normal state, executes onEnter actions, then runs in parallel all Activities, Services, then on exit, run onExit actions.
+        /// </summary>
+        Normal,
+        /// <summary>
+        /// Executes onEnter actions, then immidiately switched the machine to another state, switching, executes onExit actions.
+        /// </summary>
+        Transient,
+        /// <summary>
+        /// Executes onEnter actions, then executes in parallel Activities and Services without callback. Once services are done, exits the state machine, state machine is then marked as Done. Before finalizing, calls onExit actions.
+        /// </summary>
+        Final
+    }
+
+    /// <summary>
     /// The one state of the state machine.
     /// </summary>
     public class State
@@ -40,10 +59,15 @@ namespace XStateNet
         private Action _onExitActions;
 
         /// <summary>
+        /// State mode.
+        /// </summary>
+        private StateMode _mode;
+
+        /// <summary>
         /// Internal list of transitions.
         /// </summary>
         private Dictionary<string, string> _transitions;
-        
+
         /// <summary>
         /// List of transitions.
         /// </summary>
@@ -82,6 +106,13 @@ namespace XStateNet
         /// <param name="callback"></param>
         public delegate void InvokeServiceAsyncDelegate(State state, Action<string> callback);
 
+
+        /// <summary>
+        /// The mode of the state, represents the state is either normal, final or transient.
+        /// </summary>
+        /// <value></value>
+        public StateMode Mode { get => _mode; }
+
         /// <summary>
         /// Creates an instance of the state.
         /// </summary>
@@ -92,7 +123,8 @@ namespace XStateNet
             _serviceDelegates = new List<InvokeServiceAsyncDelegate>();
             _serviviceCleanupDelegates = new List<Action>();
             _transitions = new Dictionary<string, string>();
-            Activities = new List<Action>();
+            _activities = new List<Action>();
+            _mode = StateMode.Normal;
         }
 
         /// <summary>
@@ -128,10 +160,10 @@ namespace XStateNet
             _serviceDelegates.Add(invokeAsync);
 
             // save the clean up action if given
-            if(cleanUpAction != null){
+            if (cleanUpAction != null)
+            {
                 _serviviceCleanupDelegates.Add(cleanUpAction);
             }
-            
 
             // return current state to be able to chain up the services.
             return this;
@@ -205,15 +237,26 @@ namespace XStateNet
         /// <returns></returns>
         public State WithActivity(Action activity, Action cleanUpAction = null)
         {
-            if(activity != null)
+            if (activity != null)
             {
                 Activities.Add(activity);
             }
-            if(cleanUpAction != null)
+            if (cleanUpAction != null)
             {
                 _serviviceCleanupDelegates.Add(cleanUpAction);
             }
             return this;
+        }
+
+
+        /// <summary>
+        /// Sets the state to be a transient state and stores the next state ID to switch right after the onEnter and onExit actions are executed.
+        /// </summary>
+        /// <param name="targetStateId">Next state ID to switch the state machine to.</param>
+        public State AsTransientState(string targetStateId)
+        {
+            this._mode = StateMode.Transient;
+            return this.WithTransition("", targetStateId);
         }
     }
 }
