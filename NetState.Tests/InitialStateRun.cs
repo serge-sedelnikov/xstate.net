@@ -121,7 +121,8 @@ namespace NetState.Tests
             state.WithInvoke((state, callback) =>
             {
                 // executed in parallel
-                thread1 = Thread.CurrentThread.ManagedThreadId;
+                thread1 = Task.CurrentId.GetValueOrDefault();
+                Console.WriteLine(thread1);
                 lock(lockObject)
                 {
                     serviceExecuted += 1;
@@ -130,7 +131,8 @@ namespace NetState.Tests
             .WithInvoke((state, callback) =>
             {
                 // executed in parallel
-                thread2 = Thread.CurrentThread.ManagedThreadId;
+                thread2 = Task.CurrentId.GetValueOrDefault();
+                Console.WriteLine(thread2);
                 lock(lockObject)
                 {
                     serviceExecuted += 1;
