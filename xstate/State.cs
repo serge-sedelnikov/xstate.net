@@ -165,7 +165,6 @@ namespace XStateNet
                 _serviviceCleanupDelegates.Add(cleanUpAction);
             }
 
-
             // return current state to be able to chain up the services.
             return this;
         }

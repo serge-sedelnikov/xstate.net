@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "demo-console-app", "demo-co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xstate", "xstate\xstate.csproj", "{721B265E-5EA5-4F46-8578-9E7FF65A4836}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetState.Tests", "NetState.Tests\NetState.Tests.csproj", "{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,5 +46,17 @@ Global
 		{721B265E-5EA5-4F46-8578-9E7FF65A4836}.Release|x64.Build.0 = Release|Any CPU
 		{721B265E-5EA5-4F46-8578-9E7FF65A4836}.Release|x86.ActiveCfg = Release|Any CPU
 		{721B265E-5EA5-4F46-8578-9E7FF65A4836}.Release|x86.Build.0 = Release|Any CPU
+		{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}.Debug|x64.Build.0 = Debug|Any CPU
+		{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}.Debug|x86.Build.0 = Debug|Any CPU
+		{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}.Release|x64.ActiveCfg = Release|Any CPU
+		{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}.Release|x64.Build.0 = Release|Any CPU
+		{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}.Release|x86.ActiveCfg = Release|Any CPU
+		{0F0FEC53-2415-4F09-A21F-58D0E3F5CA6A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
