@@ -157,7 +157,7 @@ namespace NetState.Tests
         [Fact]
         public void NoStateToTransitionExist()
         {
-            Assert.Throws<InvalidOperationException>(() =>
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
                 var state = new State("My test");
                 state.WithTransition("DONE", "next state")
