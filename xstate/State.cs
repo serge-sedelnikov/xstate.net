@@ -181,6 +181,25 @@ namespace XStateNet
             return this;
         }
 
+        /// <summary>
+        /// Transition to another state after the timespan elapsed.
+        /// </summary>
+        /// <param name="delay">Time after what to make a transition</param>
+        /// <param name="targetStateId">The ID of the target state.</param>
+        public State WithDelayedTransition(TimeSpan delay, string targetStateId)
+        {
+            var eventId = Guid.NewGuid().ToString();
+            // create service and transition to go to after time delay
+            return WithTransition(eventId, targetStateId)
+            .WithInvoke(async (state, callback) =>
+            {
+                // wait for delay
+                await Task.Delay(delay);
+                // transition to another state
+                callback(eventId);
+            });
+        }
+
 
         /// <summary>
         /// Adds actions to be executed when state enters and before the services.
