@@ -39,9 +39,9 @@ namespace XStateNet
         private List<InvokeServiceAsyncDelegate> _serviceDelegates;
 
         /// <summary>
-        /// Stores the lost of clean up activities to execute on state exit.
+        /// Stores the chain of clean up activities to execute on state exit.
         /// </summary>
-        private List<Action> _serviviceCleanupDelegates;
+        private Action _serviviceCleanupDelegates;
 
         /// <summary>
         /// Internal list of activities to run in parallel to services.
@@ -91,7 +91,7 @@ namespace XStateNet
         /// The clean up actions are related to services or activities.
         /// </summary>
         /// <value></value>
-        internal List<Action> CleanUpActions { get => _serviviceCleanupDelegates; }
+        internal Action CleanUpActions { get => _serviviceCleanupDelegates; }
 
         /// <summary>
         /// List of activities to execute.
@@ -106,7 +106,7 @@ namespace XStateNet
         /// <param name="callback"></param>
         public delegate void InvokeServiceAsyncDelegate(State state, Action<string> callback);
 
-
+        
         /// <summary>
         /// The mode of the state, represents the state is either normal, final or transient.
         /// </summary>
@@ -121,7 +121,6 @@ namespace XStateNet
         {
             this._id = id;
             _serviceDelegates = new List<InvokeServiceAsyncDelegate>();
-            _serviviceCleanupDelegates = new List<Action>();
             _transitions = new Dictionary<string, string>();
             _activities = new List<Action>();
             _mode = StateMode.Normal;
@@ -150,6 +149,17 @@ namespace XStateNet
         }
 
         /// <summary>
+        /// Invokes the service and activities cleanup actions chain.
+        /// </summary>
+        internal void InvokeCleanupActions()
+        {
+             if (_serviviceCleanupDelegates != null)
+            {
+                _serviviceCleanupDelegates();
+            }
+        }
+
+        /// <summary>
         /// Invokes the service as async method.
         /// </summary>
         /// <param name="invoke">The service to invoke.</param>
@@ -162,11 +172,27 @@ namespace XStateNet
             // save the clean up action if given
             if (cleanUpAction != null)
             {
-                _serviviceCleanupDelegates.Add(cleanUpAction);
+                AddCleanupActionToChain(cleanUpAction);
             }
 
             // return current state to be able to chain up the services.
             return this;
+        }
+
+        /// <summary>
+        /// Adds the cleanup action to chain of actions.
+        /// </summary>
+        /// <param name="cleanUpAction">Action to add.</param>
+        private void AddCleanupActionToChain(Action cleanUpAction)
+        {
+            if (_serviviceCleanupDelegates == null)
+            {
+                _serviviceCleanupDelegates = cleanUpAction;
+            }
+            else
+            {
+                _serviviceCleanupDelegates += cleanUpAction;
+            }
         }
 
         /// <summary>
@@ -179,6 +205,35 @@ namespace XStateNet
         {
             _transitions.Add(eventId, targetStateId);
             return this;
+        }
+
+        /// <summary>
+        /// Transition to another state after the timespan elapsed.
+        /// </summary>
+        /// <param name="delay">Time after what to make a transition</param>
+        /// <param name="targetStateId">The ID of the target state.</param>
+        public State WithDelayedTransition(TimeSpan delay, string targetStateId)
+        {
+            var eventId = Guid.NewGuid().ToString();
+            // create service and transition to go to after time delay
+            return WithTransition(eventId, targetStateId)
+            .WithInvoke(async (state, callback) =>
+            {
+                // wait for delay
+                await Task.Delay(delay);
+                // transition to another state
+                callback(eventId);
+            });
+        }
+
+        /// <summary>
+        /// Transition to another state after the timespan elapsed.
+        /// </summary>
+        /// <param name="miliseconds">Time after what to make a transition in miliseconds</param>
+        /// <param name="targetStateId">The ID of the target state.</param>
+        public State WithDelayedTransition(int miliseconds, string targetStateId)
+        {
+            return WithDelayedTransition(TimeSpan.FromMilliseconds(miliseconds), targetStateId);
         }
 
 
@@ -243,7 +298,7 @@ namespace XStateNet
             }
             if (cleanUpAction != null)
             {
-                _serviviceCleanupDelegates.Add(cleanUpAction);
+                AddCleanupActionToChain(cleanUpAction);
             }
             return this;
         }

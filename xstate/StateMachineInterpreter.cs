@@ -77,10 +77,7 @@ namespace XStateNet
                 throw new InvalidOperationException("Initial state is not defined for the state machine or not found. Define the correct initial state.");
             }
 
-            Task.Run(() =>
-            {
-                Invoke(initialState);
-            });
+            Invoke(initialState);
         }
 
         /// <summary>
@@ -106,10 +103,7 @@ namespace XStateNet
                 }
 
                 // execute on exit actions before moving to the next state
-                state.CleanUpActions.ForEach(cleanUpAction =>
-                {
-                    cleanUpAction();
-                });
+                state.InvokeCleanupActions();
 
                 // invoke on exit actions
                 state.InvokeExitActions();
@@ -135,11 +129,12 @@ namespace XStateNet
                 Invoke(nextState, state);
             });
 
+
             // execute all on entry actions one by one
             state.InvokeEnterActions();
 
             // if state is transient, invoke exit actions and return
-            if(state.Mode == StateMode.Transient)
+            if (state.Mode == StateMode.Transient)
             {
                 callback("");
                 return;
@@ -156,7 +151,7 @@ namespace XStateNet
             state.Activities.ForEach(d =>
             {
                 // run the activities in own thread.
-                Task.Run(d);
+                Task.Run(() => d());
             });
         }
     }

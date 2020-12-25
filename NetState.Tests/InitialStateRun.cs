@@ -123,7 +123,7 @@ namespace NetState.Tests
                 // executed in parallel
                 thread1 = Task.CurrentId.GetValueOrDefault();
                 Console.WriteLine(thread1);
-                lock(lockObject)
+                lock (lockObject)
                 {
                     serviceExecuted += 1;
                 }
@@ -133,7 +133,7 @@ namespace NetState.Tests
                 // executed in parallel
                 thread2 = Task.CurrentId.GetValueOrDefault();
                 Console.WriteLine(thread2);
-                lock(lockObject)
+                lock (lockObject)
                 {
                     serviceExecuted += 1;
                 }
@@ -152,6 +152,30 @@ namespace NetState.Tests
 
             Assert.Equal(2, serviceExecuted);
             Assert.NotEqual(thread1, thread2);
+        }
+
+        [Fact]
+        public void NoStateToTransitionExist()
+        {
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var state = new State("My test");
+                state.WithTransition("DONE", "next state")
+                .WithInvoke((state, callback) => {
+                    Task.Delay(500).GetAwaiter().GetResult();
+                    callback("DONE");
+                });
+
+                var stateMachine = new StateMachine("test", "test", "My test");
+                    stateMachine.States = new State[]{
+                    state
+                };
+
+                var interpreter = new Interpreter();
+                interpreter.StartStateMachine(stateMachine);
+
+                await Task.Delay(1000);
+            });
         }
     }
 }
