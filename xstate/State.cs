@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace XStateNet
@@ -106,7 +107,7 @@ namespace XStateNet
         /// <param name="callback"></param>
         public delegate void InvokeServiceAsyncDelegate(State state, Action<string> callback);
 
-        
+
         /// <summary>
         /// The mode of the state, represents the state is either normal, final or transient.
         /// </summary>
@@ -153,7 +154,7 @@ namespace XStateNet
         /// </summary>
         internal void InvokeCleanupActions()
         {
-             if (_serviviceCleanupDelegates != null)
+            if (_serviviceCleanupDelegates != null)
             {
                 _serviviceCleanupDelegates();
             }
@@ -215,14 +216,26 @@ namespace XStateNet
         public State WithDelayedTransition(TimeSpan delay, string targetStateId)
         {
             var eventId = Guid.NewGuid().ToString();
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
+
             // create service and transition to go to after time delay
             return WithTransition(eventId, targetStateId)
             .WithInvoke(async (state, callback) =>
             {
                 // wait for delay
-                await Task.Delay(delay);
-                // transition to another state
-                callback(eventId);
+                // pass token if this timeout is canceled by another service invokation
+                // NOTE!: if delay got canceled, the exception is thrown,
+                // hence we use .ContinueWith(...) to rid off unnecessary exception here.
+                await Task.Delay(delay, tokenSource.Token).ContinueWith(t => {});
+
+                // transition to another state only if token was not canceled
+                if (!tokenSource.IsCancellationRequested)
+                    callback(eventId);
+            }, () =>
+            {
+                // if the state is exiting because of another service invoking callback,
+                // need to stop this timeout awaiting and exit too
+                tokenSource.Cancel();
             });
         }
 

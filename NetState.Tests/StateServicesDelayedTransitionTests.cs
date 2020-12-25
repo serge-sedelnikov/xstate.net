@@ -121,10 +121,11 @@ namespace NetState.Tests
 
             var state1 = new State("My test");
             state1.WithDelayedTransition(TimeSpan.FromSeconds(5), "My test 2")
-            .WithInvoke(async (state, callback) => {
+            .WithInvoke(async (state, callback) =>
+            {
                 // start counting service
                 state1ServiceRunning = true;
-                while(state1ServiceRunning)
+                while (state1ServiceRunning)
                 {
                     state1ServiceCount++;
                     // count every half a secm to get 10 times to check
@@ -132,7 +133,8 @@ namespace NetState.Tests
                 }
                 // never call callback here to make sure service is canceled by delay service
             })
-            .WithActionOnExit(() => {
+            .WithActionOnExit(() =>
+            {
                 // stop the loop
                 state1ServiceRunning = false;
             });
@@ -161,6 +163,77 @@ namespace NetState.Tests
             Assert.False(state1ServiceRunning);
             // how many times loop was running before stopped
             Assert.True(state1ServiceCount >= 10);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void DelayedTransitionRunAfterNotmalStateChange(bool timeout)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            bool timeoutStateTriggered = false;
+            bool successStateTriggered = false;
+
+            var state1 = new State("My test");
+            state1
+            // wait for timeout or success if success is provided
+            .WithDelayedTransition(TimeSpan.FromSeconds(5), "timedout")
+            .WithTransition("SUCCESS_NO_TIMEOUT", "success")
+            .WithInvoke(async (s, callback) =>
+            {
+                await Task.Delay(2000);
+                if (!timeout)
+                {
+                    callback("SUCCESS_NO_TIMEOUT");
+                }
+            });
+
+            // timeout state
+            var timeoutState = new State("timedout")
+            .WithActionOnEnter(() =>
+            {
+                stopwatch.Stop();
+                timeoutStateTriggered = true;
+                successStateTriggered = false;
+            });
+
+            // not a timeout state
+            var successState = new State("success")
+            .WithActionOnEnter(() =>
+            {
+                stopwatch.Stop();
+                timeoutStateTriggered = false;
+                successStateTriggered = true;
+            });
+
+
+            var stateMachine = new StateMachine("test", "test", "My test");
+            stateMachine.States = new State[]{
+                state1, timeoutState, successState
+            };
+
+            var interpreter = new Interpreter();
+            interpreter.StartStateMachine(stateMachine);
+
+            // wait for 6 sec to be sure
+            Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
+
+            Assert.Equal(timeout, timeoutStateTriggered);
+            Assert.NotEqual(timeout, successStateTriggered);
+            if (timeout)
+            {
+                Assert.InRange(stopwatch.ElapsedMilliseconds,
+                TimeSpan.FromSeconds(4.9).TotalMilliseconds,
+                TimeSpan.FromSeconds(5.1).TotalMilliseconds);
+            }
+            else 
+            {
+                Assert.InRange(stopwatch.ElapsedMilliseconds,
+                TimeSpan.FromSeconds(1.9).TotalMilliseconds,
+                TimeSpan.FromSeconds(2.1).TotalMilliseconds);
+            }
+            Assert.False(stopwatch.IsRunning);
         }
     }
 }
