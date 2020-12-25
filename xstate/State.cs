@@ -226,6 +226,16 @@ namespace XStateNet
             });
         }
 
+        /// <summary>
+        /// Transition to another state after the timespan elapsed.
+        /// </summary>
+        /// <param name="miliseconds">Time after what to make a transition in miliseconds</param>
+        /// <param name="targetStateId">The ID of the target state.</param>
+        public State WithDelayedTransition(int miliseconds, string targetStateId)
+        {
+            return WithDelayedTransition(TimeSpan.FromMilliseconds(miliseconds), targetStateId);
+        }
+
 
         /// <summary>
         /// Adds actions to be executed when state enters and before the services.

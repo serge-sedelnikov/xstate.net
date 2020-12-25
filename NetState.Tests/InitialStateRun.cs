@@ -174,7 +174,7 @@ namespace NetState.Tests
                 var interpreter = new Interpreter();
                 interpreter.StartStateMachine(stateMachine);
 
-                Task.Delay(1000).GetAwaiter().GetResult();
+                await Task.Delay(1000);
             });
         }
     }
