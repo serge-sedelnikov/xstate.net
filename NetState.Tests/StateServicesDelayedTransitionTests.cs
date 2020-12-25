@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace NetState.Tests
 {
-    public class StateServicesTests
+    public class StateServicesDelayedTransitionTests
     {
         [Fact]
         public void DelayedTransitionRunSuccessfully()
