@@ -71,13 +71,19 @@ namespace XStateNet
         {
             this._stateMachine = machine ?? throw new ArgumentNullException(nameof(machine));
 
+            if(_stateMachine.States == null)
+            {
+                throw new InvalidOperationException("States are not defined for that state machine. Define 'States' property.");
+            }
+
             var initialState = _stateMachine.States.FirstOrDefault(s => s.Id == _stateMachine.InitialStateId);
             if (initialState == null)
             {
                 throw new InvalidOperationException("Initial state is not defined for the state machine or not found. Define the correct initial state.");
             }
 
-            Invoke(initialState);
+            // start invoking the state asyncronously
+            Task.Run(() => Invoke(initialState));
         }
 
         /// <summary>
