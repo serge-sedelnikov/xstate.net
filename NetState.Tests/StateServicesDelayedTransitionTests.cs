@@ -40,7 +40,7 @@ namespace NetState.Tests
             Assert.False(stopwatch.IsRunning);
             // check that stopwatch timer shows about 5 sec
             Assert.InRange(stopwatch.ElapsedMilliseconds,
-            TimeSpan.FromSeconds(5).TotalMilliseconds,
+            TimeSpan.FromSeconds(4.9).TotalMilliseconds,
             TimeSpan.FromSeconds(5.1).TotalMilliseconds);
         }
 
@@ -75,7 +75,7 @@ namespace NetState.Tests
             Assert.False(stopwatch.IsRunning);
             // check that stopwatch timer shows about 5 sec
             Assert.InRange(stopwatch.ElapsedMilliseconds,
-            TimeSpan.FromSeconds(5).TotalMilliseconds,
+            TimeSpan.FromSeconds(4.9).TotalMilliseconds,
             TimeSpan.FromSeconds(5.1).TotalMilliseconds);
         }
 
