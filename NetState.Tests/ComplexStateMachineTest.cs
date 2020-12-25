@@ -23,55 +23,67 @@ namespace NetState.Tests
             State state1 = new State("state1");
 
             // on enter actions
-            state1.WithActionOnEnter(() => {
+            state1.WithActionOnEnter(() =>
+            {
                 onEnterActionCount++;
             })
-            .WithActionOnEnter(() => {
+            .WithActionOnEnter(() =>
+            {
                 onEnterActionCount++;
             });
 
             // services with callback
-            state1.WithInvoke((s, callback) => {
-                lock(lockObject)
+            state1.WithInvoke((s, callback) =>
+            {
+                lock (lockObject)
                 {
                     serviceCount++;
                 }
                 callback("DONE");
-            }, () => {
+            }, () =>
+            {
                 cleanupCount++;
             })
-            .WithInvoke((s, callback) => {
-                lock(lockObject)
+            .WithInvoke((s, callback) =>
+            {
+                lock (lockObject)
                 {
                     serviceCount++;
                 }
-            }, () => {
+            }, () =>
+            {
                 cleanupCount++;
             });
 
             // activities
-            state1.WithActivity(() => {
-                lock(lockObject)
+            state1.WithActivity(() =>
+            {
+                lock (lockObject)
                 {
                     activityCount++;
                 }
-            }, () => {
+            }, () =>
+            {
                 activityCleanupCount++;
             })
-            .WithActivity(() => {
-                lock(lockObject)
+            .WithActivity(() =>
+            {
+                lock (lockObject)
                 {
                     activityCount++;
                 }
-            }, () => {
+            }, () =>
+            {
                 activityCleanupCount++;
             });
 
             // on exit actions
-            state1.WithActionOnExit(() => {
+            state1.WithActionOnExit(() =>
+            {
                 onExitActionCount++;
             })
-            .WithActionOnExit(() => {
+            .WithActionOnExit(() =>
+            {
                 onExitActionCount++;
             });
 
@@ -81,7 +93,7 @@ namespace NetState.Tests
             State state2 = new State("state2");
 
             StateMachine machine = new StateMachine("test", "test", "state1");
-            machine.States = new [] {
+            machine.States = new[] {
                 state1, state2
             };
 
@@ -97,6 +109,58 @@ namespace NetState.Tests
             Assert.Equal(2, activityCount);
             Assert.Equal(2, activityCleanupCount);
             Assert.Equal(2, onExitActionCount);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task MultipleStateCallbacks(bool failure)
+        {
+            bool failed = false;
+            bool done = false;
+
+            State state1 = new State("state1");
+            state1.WithInvoke((s, callback) =>
+            {
+                if (!failure)
+                    callback("DONE");
+            })
+            .WithInvoke((s, callback) =>
+            {
+                if (failure)
+                    callback("FAILED");
+            })
+            .WithTransition("DONE", "doneState")
+            .WithTransition("FAILED", "failStated");
+
+            State doneState = new State("doneState")
+            .WithActionOnEnter(() =>
+            {
+                done = true;
+                failed = false;
+            });
+            State failStated = new State("failStated")
+            .WithActionOnEnter(() =>
+            {
+                done = false;
+                failed = true;
+            });
+
+            StateMachine machine = new StateMachine("test", "test", "state1");
+            machine.States = new[] {
+                state1,
+                doneState,
+                failStated
+            };
+
+            Interpreter interpreter = new Interpreter();
+            interpreter.StartStateMachine(machine);
+
+            // TODO: wait until state machine is done
+            await Task.Delay(1000);
+
+            Assert.Equal(failure, failed);
+            Assert.NotEqual(failure, done);
         }
     }
 }

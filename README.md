@@ -1,5 +1,9 @@
 ![.NET](https://github.com/serge-sedelnikov/xstate.net/workflows/.NET/badge.svg?branch=main)
 
+# Important
+
+Work in progress! I will notify here once the version of the state machine engine can be used in production.
+
 # xstate.net
 .NET implementation of xstate framework for NodeJS (https://github.com/davidkpiano/xstate)
 
