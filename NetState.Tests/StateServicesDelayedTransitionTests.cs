@@ -10,7 +10,7 @@ namespace NetState.Tests
     public class StateServicesDelayedTransitionTests
     {
         [Fact]
-        public void DelayedTransitionRunSuccessfully()
+        public async Task DelayedTransitionRunSuccessfully()
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -35,7 +35,7 @@ namespace NetState.Tests
             interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
-            Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
+            await Task.Delay(TimeSpan.FromSeconds(6));
             Assert.True(state2Triggered);
             Assert.False(stopwatch.IsRunning);
             // check that stopwatch timer shows about 5 sec
@@ -45,7 +45,7 @@ namespace NetState.Tests
         }
 
         [Fact]
-        public void DelayedTransitionRunSuccessfullyWithMiliseconds()
+        public async Task DelayedTransitionRunSuccessfullyWithMiliseconds()
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -70,7 +70,7 @@ namespace NetState.Tests
             interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
-            Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
+            await Task.Delay(TimeSpan.FromSeconds(6));
             Assert.True(state2Triggered);
             Assert.False(stopwatch.IsRunning);
             // check that stopwatch timer shows about 5 sec
@@ -80,7 +80,7 @@ namespace NetState.Tests
         }
 
         [Fact]
-        public void DelayedTransitionDidNotRun()
+        public async Task DelayedTransitionDidNotRun()
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -105,7 +105,7 @@ namespace NetState.Tests
             interpreter.StartStateMachine();
 
             // wait for 4 sec
-            Task.Delay(TimeSpan.FromSeconds(4)).GetAwaiter().GetResult();
+            await Task.Delay(TimeSpan.FromSeconds(4));
             Assert.False(state2Triggered);
             Assert.True(stopwatch.IsRunning);
         }
@@ -168,7 +168,7 @@ namespace NetState.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void DelayedTransitionRunAfterNotmalStateChange(bool timeout)
+        public async Task DelayedTransitionRunAfterNotmalStateChange(bool timeout)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -217,7 +217,7 @@ namespace NetState.Tests
             interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
-            Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
+            await Task.Delay(TimeSpan.FromSeconds(6));
 
             Assert.Equal(timeout, timeoutStateTriggered);
             Assert.NotEqual(timeout, successStateTriggered);

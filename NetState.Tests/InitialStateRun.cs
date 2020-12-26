@@ -9,7 +9,7 @@ namespace NetState.Tests
     public class InitialStateRun
     {
         [Fact]
-        public void OneInitialStateOneOnEnterActionExecuted()
+        public async Task OneInitialStateOneOnEnterActionExecuted()
         {
             bool onEnterActionRun = false;
 
@@ -28,13 +28,13 @@ namespace NetState.Tests
             interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
-            Task.Delay(2000).GetAwaiter().GetResult();
+            await Task.Delay(2000);
 
             Assert.True(onEnterActionRun);
         }
 
         [Fact]
-        public void OneInitialStateManyOnEnterActionExecuted()
+        public async Task OneInitialStateManyOnEnterActionExecuted()
         {
             int onEnterActionRun = 0;
 
@@ -62,13 +62,13 @@ namespace NetState.Tests
             interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
-            Task.Delay(2000).GetAwaiter().GetResult();
+            await Task.Delay(2000);
 
             Assert.Equal(3, onEnterActionRun);
         }
 
         [Fact]
-        public void OneInitialStateOneServiceExecuted()
+        public async Task OneInitialStateOneServiceExecuted()
         {
             bool serviceExecuted = false;
 
@@ -87,7 +87,7 @@ namespace NetState.Tests
             interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
-            Task.Delay(2000).GetAwaiter().GetResult();
+            await Task.Delay(2000);
 
             Assert.True(serviceExecuted);
         }
@@ -110,7 +110,7 @@ namespace NetState.Tests
         }
 
         [Fact]
-        public void OneInitialStateMultipleServicesExecuted()
+        public async Task OneInitialStateMultipleServicesExecuted()
         {
             object lockObject = new object();
             int serviceExecuted = 0;
@@ -148,7 +148,7 @@ namespace NetState.Tests
             interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
-            Task.Delay(2000).GetAwaiter().GetResult();
+            await Task.Delay(2000);
 
             Assert.Equal(2, serviceExecuted);
             Assert.NotEqual(thread1, thread2);
@@ -163,7 +163,6 @@ namespace NetState.Tests
                 state.WithTransition("DONE", "next state")
                 .WithInvoke((callback) =>
                 {
-                    Task.Delay(500).GetAwaiter().GetResult();
                     callback("DONE");
                 });
 
@@ -186,7 +185,6 @@ namespace NetState.Tests
             state1.WithTransition("DONE", "My test 2")
             .WithInvoke((callback) =>
             {
-                Task.Delay(500).GetAwaiter().GetResult();
                 callback("NOT_EXISTS_NOT_REGISTERED");
             });
 
@@ -220,9 +218,9 @@ namespace NetState.Tests
         {
             var state1 = new State("My test");
             state1.WithTransition("DONE", "My test 2")
-            .WithInvoke((callback) =>
+            .WithInvoke(async (callback) =>
             {
-                Task.Delay(500).GetAwaiter().GetResult();
+                await Task.Delay(500);
                 callback("DONE");
             });
 
