@@ -10,14 +10,14 @@ namespace NetState.Tests
     public class StateServicesDelayedTransitionTests
     {
         [Fact]
-        public void DelayedTransitionRunSuccessfully()
+        public async Task DelayedTransitionRunSuccessfully()
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             bool state2Triggered = false;
 
             var state1 = new State("My test");
-            state1.WithDelayedTransition(TimeSpan.FromSeconds(5), "My test 2");
+            state1.WithTimeout(TimeSpan.FromSeconds(5), "My test 2");
 
             var state2 = new State("My test 2")
             .WithActionOnEnter(() =>
@@ -31,11 +31,11 @@ namespace NetState.Tests
                 state1, state2
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
-            Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
+            await Task.Delay(TimeSpan.FromSeconds(6));
             Assert.True(state2Triggered);
             Assert.False(stopwatch.IsRunning);
             // check that stopwatch timer shows about 5 sec
@@ -45,14 +45,14 @@ namespace NetState.Tests
         }
 
         [Fact]
-        public void DelayedTransitionRunSuccessfullyWithMiliseconds()
+        public async Task DelayedTransitionRunSuccessfullyWithMiliseconds()
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             bool state2Triggered = false;
 
             var state1 = new State("My test");
-            state1.WithDelayedTransition(5000, "My test 2");
+            state1.WithTimeout(5000, "My test 2");
 
             var state2 = new State("My test 2")
             .WithActionOnEnter(() =>
@@ -66,11 +66,11 @@ namespace NetState.Tests
                 state1, state2
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
-            Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
+            await Task.Delay(TimeSpan.FromSeconds(6));
             Assert.True(state2Triggered);
             Assert.False(stopwatch.IsRunning);
             // check that stopwatch timer shows about 5 sec
@@ -80,14 +80,14 @@ namespace NetState.Tests
         }
 
         [Fact]
-        public void DelayedTransitionDidNotRun()
+        public async Task DelayedTransitionDidNotRun()
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             bool state2Triggered = false;
 
             var state1 = new State("My test");
-            state1.WithDelayedTransition(TimeSpan.FromSeconds(5), "My test 2");
+            state1.WithTimeout(TimeSpan.FromSeconds(5), "My test 2");
 
             var state2 = new State("My test 2")
             .WithActionOnEnter(() =>
@@ -101,17 +101,17 @@ namespace NetState.Tests
                 state1, state2
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // wait for 4 sec
-            Task.Delay(TimeSpan.FromSeconds(4)).GetAwaiter().GetResult();
+            await Task.Delay(TimeSpan.FromSeconds(4));
             Assert.False(state2Triggered);
             Assert.True(stopwatch.IsRunning);
         }
 
         [Fact]
-        public void DelayedTransitionServicesCanceledAfterDelay()
+        public async Task DelayedTransitionServicesCanceledAfterDelay()
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -120,8 +120,8 @@ namespace NetState.Tests
             bool state2Triggered = false;
 
             var state1 = new State("My test");
-            state1.WithDelayedTransition(TimeSpan.FromSeconds(5), "My test 2")
-            .WithInvoke(async (state, callback) =>
+            state1.WithTimeout(TimeSpan.FromSeconds(5), "My test 2")
+            .WithInvoke(async (callback) =>
             {
                 // start counting service
                 state1ServiceRunning = true;
@@ -151,11 +151,11 @@ namespace NetState.Tests
                 state1, state2
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // wait for 6 sec
-            Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
+            await Task.Delay(TimeSpan.FromSeconds(6));
             Assert.True(state2Triggered);
             Assert.False(stopwatch.IsRunning);
 
@@ -168,7 +168,7 @@ namespace NetState.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void DelayedTransitionRunAfterNotmalStateChange(bool timeout)
+        public async Task DelayedTransitionRunAfterNotmalStateChange(bool timeout)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -178,9 +178,9 @@ namespace NetState.Tests
             var state1 = new State("My test");
             state1
             // wait for timeout or success if success is provided
-            .WithDelayedTransition(TimeSpan.FromSeconds(5), "timedout")
+            .WithTimeout(TimeSpan.FromSeconds(5), "timedout")
             .WithTransition("SUCCESS_NO_TIMEOUT", "success")
-            .WithInvoke(async (s, callback) =>
+            .WithInvoke(async (callback) =>
             {
                 await Task.Delay(2000);
                 if (!timeout)
@@ -213,11 +213,11 @@ namespace NetState.Tests
                 state1, timeoutState, successState
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
-            Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
+            await Task.Delay(TimeSpan.FromSeconds(6));
 
             Assert.Equal(timeout, timeoutStateTriggered);
             Assert.NotEqual(timeout, successStateTriggered);

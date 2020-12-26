@@ -9,7 +9,7 @@ namespace NetState.Tests
     public class InitialStateRun
     {
         [Fact]
-        public void OneInitialStateOneOnEnterActionExecuted()
+        public async Task OneInitialStateOneOnEnterActionExecuted()
         {
             bool onEnterActionRun = false;
 
@@ -24,17 +24,17 @@ namespace NetState.Tests
                 state
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
-            Task.Delay(2000).GetAwaiter().GetResult();
+            await Task.Delay(2000);
 
             Assert.True(onEnterActionRun);
         }
 
         [Fact]
-        public void OneInitialStateManyOnEnterActionExecuted()
+        public async Task OneInitialStateManyOnEnterActionExecuted()
         {
             int onEnterActionRun = 0;
 
@@ -58,22 +58,22 @@ namespace NetState.Tests
                 state
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
-            Task.Delay(2000).GetAwaiter().GetResult();
+            await Task.Delay(2000);
 
             Assert.Equal(3, onEnterActionRun);
         }
 
         [Fact]
-        public void OneInitialStateOneServiceExecuted()
+        public async Task OneInitialStateOneServiceExecuted()
         {
             bool serviceExecuted = false;
 
             var state = new State("My test");
-            state.WithInvoke((state, callback) =>
+            state.WithInvoke((callback) =>
             {
                 serviceExecuted = true;
             });
@@ -83,11 +83,11 @@ namespace NetState.Tests
                 state
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
-            Task.Delay(2000).GetAwaiter().GetResult();
+            await Task.Delay(2000);
 
             Assert.True(serviceExecuted);
         }
@@ -104,13 +104,13 @@ namespace NetState.Tests
                 state
             };
 
-                var interpreter = new Interpreter();
-                interpreter.StartStateMachine(stateMachine);
+                var interpreter = new Interpreter(stateMachine);
+                interpreter.StartStateMachine();
             });
         }
 
         [Fact]
-        public void OneInitialStateMultipleServicesExecuted()
+        public async Task OneInitialStateMultipleServicesExecuted()
         {
             object lockObject = new object();
             int serviceExecuted = 0;
@@ -118,7 +118,7 @@ namespace NetState.Tests
             int thread2 = 0;
 
             var state = new State("My test");
-            state.WithInvoke((state, callback) =>
+            state.WithInvoke((callback) =>
             {
                 // executed in parallel
                 thread1 = Task.CurrentId.GetValueOrDefault();
@@ -128,7 +128,7 @@ namespace NetState.Tests
                     serviceExecuted += 1;
                 }
             })
-            .WithInvoke((state, callback) =>
+            .WithInvoke((callback) =>
             {
                 // executed in parallel
                 thread2 = Task.CurrentId.GetValueOrDefault();
@@ -144,11 +144,11 @@ namespace NetState.Tests
                 state
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
-            Task.Delay(2000).GetAwaiter().GetResult();
+            await Task.Delay(2000);
 
             Assert.Equal(2, serviceExecuted);
             Assert.NotEqual(thread1, thread2);
@@ -161,9 +161,8 @@ namespace NetState.Tests
             {
                 var state = new State("My test");
                 state.WithTransition("DONE", "next state")
-                .WithInvoke((state, callback) =>
+                .WithInvoke((callback) =>
                 {
-                    Task.Delay(500).GetAwaiter().GetResult();
                     callback("DONE");
                 });
 
@@ -172,8 +171,8 @@ namespace NetState.Tests
                     state
                 };
 
-                var interpreter = new Interpreter();
-                interpreter.StartStateMachine(stateMachine);
+                var interpreter = new Interpreter(stateMachine);
+                interpreter.StartStateMachine();
 
                 await Task.Delay(1000);
             });
@@ -184,9 +183,8 @@ namespace NetState.Tests
         {
             var state1 = new State("My test");
             state1.WithTransition("DONE", "My test 2")
-            .WithInvoke((state, callback) =>
+            .WithInvoke((callback) =>
             {
-                Task.Delay(500).GetAwaiter().GetResult();
                 callback("NOT_EXISTS_NOT_REGISTERED");
             });
 
@@ -198,7 +196,7 @@ namespace NetState.Tests
                     state2
                 };
 
-            var interpreter = new Interpreter();
+            var interpreter = new Interpreter(stateMachine);
 
             var newStateId = "";
             var prevStateId = "";
@@ -207,12 +205,12 @@ namespace NetState.Tests
                 prevStateId = args.PreviousState?.Id;
             };
 
-            interpreter.StartStateMachine(stateMachine);
+            interpreter.StartStateMachine();
 
             await Task.Delay(1000);
 
             Assert.Equal("My test", newStateId);
-            Assert.Equal(null, prevStateId);
+            Assert.Null(prevStateId);
         }
 
         [Fact]
@@ -220,9 +218,9 @@ namespace NetState.Tests
         {
             var state1 = new State("My test");
             state1.WithTransition("DONE", "My test 2")
-            .WithInvoke((state, callback) =>
+            .WithInvoke(async (callback) =>
             {
-                Task.Delay(500).GetAwaiter().GetResult();
+                await Task.Delay(500);
                 callback("DONE");
             });
 
@@ -234,7 +232,7 @@ namespace NetState.Tests
                     state2
                 };
 
-            var interpreter = new Interpreter();
+            var interpreter = new Interpreter(stateMachine);
 
             var newStateId = "";
             var prevStateId = "";
@@ -243,7 +241,7 @@ namespace NetState.Tests
                 prevStateId = args.PreviousState?.Id;
             };
 
-            interpreter.StartStateMachine(stateMachine);
+            interpreter.StartStateMachine();
 
             await Task.Delay(1000);
 

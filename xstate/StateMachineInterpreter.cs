@@ -57,6 +57,11 @@ namespace XStateNet
         /// </summary>
         private StateMachine _stateMachine;
 
+        public Interpreter(StateMachine machine)
+        {
+            _stateMachine = machine ?? throw new ArgumentNullException(nameof(machine));
+        }
+
         private void RaiseOnStateChangedEvent(State newState, State previousState)
         {
             StateChangedEventHandler handler = OnStateChanged;
@@ -67,10 +72,8 @@ namespace XStateNet
         /// Starts the state machine.
         /// </summary>
         /// <param name="machine">State machine to start.</param>
-        public void StartStateMachine(StateMachine machine)
+        public void StartStateMachine()
         {
-            this._stateMachine = machine ?? throw new ArgumentNullException(nameof(machine));
-
             if(_stateMachine.States == null)
             {
                 throw new InvalidOperationException("States are not defined for that state machine. Define 'States' property.");
@@ -150,7 +153,7 @@ namespace XStateNet
             state.ServiceDelegates.ForEach(d =>
             {
                 // run the services on own threads
-                Task.Run(() => d(state, callback));
+                Task.Run(() => d(callback));
             });
 
             // execute all activities in parallel

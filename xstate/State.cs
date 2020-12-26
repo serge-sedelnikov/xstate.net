@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -103,9 +104,8 @@ namespace XStateNet
         /// <summary>
         /// Service invocation delegate.
         /// </summary>
-        /// <param name="state"></param>
         /// <param name="callback"></param>
-        public delegate void InvokeServiceAsyncDelegate(State state, Action<string> callback);
+        public delegate void InvokeServiceAsyncDelegate(Action<string> callback);
 
 
         /// <summary>
@@ -181,6 +181,54 @@ namespace XStateNet
         }
 
         /// <summary>
+        /// Executes service action asyncronously and calls next state on action done, or on error.
+        /// </summary>
+        /// <param name="asyncAction">Action to execute in async way.</param>
+        /// <param name="onDoneTargetStateId">State to move to when action is done.</param>
+        /// <param name="onErrorTargetStateId">State to move on if action executed with error.</param>
+        /// <returns></returns>
+        public State WithInvoke(Func<Task> asyncAction, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
+        {
+            if (asyncAction is null)
+            {
+                throw new ArgumentNullException(nameof(asyncAction));
+            }
+
+            var doneEventId = Guid.NewGuid().ToString();
+            var errorEventId = Guid.NewGuid().ToString();
+
+            // compose transitions
+            if (!string.IsNullOrEmpty(onDoneTargetStateId))
+            {
+                this.WithTransition(doneEventId, onDoneTargetStateId);
+            }
+            if (!string.IsNullOrEmpty(onErrorTargetStateId))
+            {
+                this.WithTransition(errorEventId, onErrorTargetStateId);
+            }
+
+            // create the service with callback
+            this.WithInvoke(async (callback) =>
+            {
+                try
+                {
+                    await asyncAction();
+                    if(!string.IsNullOrEmpty(onDoneTargetStateId))
+                        callback(doneEventId);
+                }
+                catch (Exception error)
+                {
+                    Debug.WriteLine(error);
+                    if(!string.IsNullOrEmpty(onErrorTargetStateId))
+                        callback(errorEventId);
+                }
+            });
+
+            // return current state to be able to chain up the services.
+            return this;
+        }
+
+        /// <summary>
         /// Adds the cleanup action to chain of actions.
         /// </summary>
         /// <param name="cleanUpAction">Action to add.</param>
@@ -213,20 +261,20 @@ namespace XStateNet
         /// </summary>
         /// <param name="delay">Time after what to make a transition</param>
         /// <param name="targetStateId">The ID of the target state.</param>
-        public State WithDelayedTransition(TimeSpan delay, string targetStateId)
+        public State WithTimeout(TimeSpan delay, string targetStateId)
         {
             var eventId = Guid.NewGuid().ToString();
             CancellationTokenSource tokenSource = new CancellationTokenSource();
 
             // create service and transition to go to after time delay
             return WithTransition(eventId, targetStateId)
-            .WithInvoke(async (state, callback) =>
+            .WithInvoke(async (callback) =>
             {
                 // wait for delay
                 // pass token if this timeout is canceled by another service invokation
                 // NOTE!: if delay got canceled, the exception is thrown,
                 // hence we use .ContinueWith(...) to rid off unnecessary exception here.
-                await Task.Delay(delay, tokenSource.Token).ContinueWith(t => {});
+                await Task.Delay(delay, tokenSource.Token).ContinueWith(t => { });
 
                 // transition to another state only if token was not canceled
                 if (!tokenSource.IsCancellationRequested)
@@ -244,9 +292,9 @@ namespace XStateNet
         /// </summary>
         /// <param name="miliseconds">Time after what to make a transition in miliseconds</param>
         /// <param name="targetStateId">The ID of the target state.</param>
-        public State WithDelayedTransition(int miliseconds, string targetStateId)
+        public State WithTimeout(int miliseconds, string targetStateId)
         {
-            return WithDelayedTransition(TimeSpan.FromMilliseconds(miliseconds), targetStateId);
+            return WithTimeout(TimeSpan.FromMilliseconds(miliseconds), targetStateId);
         }
 
 

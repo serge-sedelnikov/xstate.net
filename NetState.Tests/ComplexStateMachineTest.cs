@@ -33,7 +33,7 @@ namespace NetState.Tests
             });
 
             // services with callback
-            state1.WithInvoke((s, callback) =>
+            state1.WithInvoke((callback) =>
             {
                 lock (lockObject)
                 {
@@ -44,7 +44,7 @@ namespace NetState.Tests
             {
                 cleanupCount++;
             })
-            .WithInvoke((s, callback) =>
+            .WithInvoke((callback) =>
             {
                 lock (lockObject)
                 {
@@ -97,8 +97,8 @@ namespace NetState.Tests
                 state1, state2
             };
 
-            Interpreter interpreter = new Interpreter();
-            interpreter.StartStateMachine(machine);
+            Interpreter interpreter = new Interpreter(machine);
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is DONE
             await Task.Delay(1000);
@@ -120,12 +120,12 @@ namespace NetState.Tests
             bool done = false;
 
             State state1 = new State("state1");
-            state1.WithInvoke((s, callback) =>
+            state1.WithInvoke((callback) =>
             {
                 if (!failure)
                     callback("DONE");
             })
-            .WithInvoke((s, callback) =>
+            .WithInvoke((callback) =>
             {
                 if (failure)
                     callback("FAILED");
@@ -153,8 +153,8 @@ namespace NetState.Tests
                 failStated
             };
 
-            Interpreter interpreter = new Interpreter();
-            interpreter.StartStateMachine(machine);
+            Interpreter interpreter = new Interpreter(machine);
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
             await Task.Delay(1000);

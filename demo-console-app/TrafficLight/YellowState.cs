@@ -27,7 +27,7 @@ namespace demo_console_app.TrafficLight
         /// </summary>
         /// <param name="state"></param>
         /// <param name="callback"></param>
-        private async void WaitForYellowLightTimer(State state, Action<string> callback)
+        private async void WaitForYellowLightTimer(Action<string> callback)
         {
             await Task.Delay(3000);
             callback("YELLOW_LIGHT_DONE");
