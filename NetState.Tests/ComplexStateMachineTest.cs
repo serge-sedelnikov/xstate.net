@@ -33,7 +33,7 @@ namespace NetState.Tests
             });
 
             // services with callback
-            state1.WithInvoke((s, callback) =>
+            state1.WithInvoke((callback) =>
             {
                 lock (lockObject)
                 {
@@ -44,7 +44,7 @@ namespace NetState.Tests
             {
                 cleanupCount++;
             })
-            .WithInvoke((s, callback) =>
+            .WithInvoke((callback) =>
             {
                 lock (lockObject)
                 {
@@ -120,12 +120,12 @@ namespace NetState.Tests
             bool done = false;
 
             State state1 = new State("state1");
-            state1.WithInvoke((s, callback) =>
+            state1.WithInvoke((callback) =>
             {
                 if (!failure)
                     callback("DONE");
             })
-            .WithInvoke((s, callback) =>
+            .WithInvoke((callback) =>
             {
                 if (failure)
                     callback("FAILED");

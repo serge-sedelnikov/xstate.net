@@ -150,7 +150,7 @@ namespace XStateNet
             state.ServiceDelegates.ForEach(d =>
             {
                 // run the services on own threads
-                Task.Run(() => d(state, callback));
+                Task.Run(() => d(callback));
             });
 
             // execute all activities in parallel

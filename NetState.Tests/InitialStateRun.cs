@@ -73,7 +73,7 @@ namespace NetState.Tests
             bool serviceExecuted = false;
 
             var state = new State("My test");
-            state.WithInvoke((state, callback) =>
+            state.WithInvoke((callback) =>
             {
                 serviceExecuted = true;
             });
@@ -118,7 +118,7 @@ namespace NetState.Tests
             int thread2 = 0;
 
             var state = new State("My test");
-            state.WithInvoke((state, callback) =>
+            state.WithInvoke((callback) =>
             {
                 // executed in parallel
                 thread1 = Task.CurrentId.GetValueOrDefault();
@@ -128,7 +128,7 @@ namespace NetState.Tests
                     serviceExecuted += 1;
                 }
             })
-            .WithInvoke((state, callback) =>
+            .WithInvoke((callback) =>
             {
                 // executed in parallel
                 thread2 = Task.CurrentId.GetValueOrDefault();
@@ -161,7 +161,7 @@ namespace NetState.Tests
             {
                 var state = new State("My test");
                 state.WithTransition("DONE", "next state")
-                .WithInvoke((state, callback) =>
+                .WithInvoke((callback) =>
                 {
                     Task.Delay(500).GetAwaiter().GetResult();
                     callback("DONE");
@@ -184,7 +184,7 @@ namespace NetState.Tests
         {
             var state1 = new State("My test");
             state1.WithTransition("DONE", "My test 2")
-            .WithInvoke((state, callback) =>
+            .WithInvoke((callback) =>
             {
                 Task.Delay(500).GetAwaiter().GetResult();
                 callback("NOT_EXISTS_NOT_REGISTERED");
@@ -212,7 +212,7 @@ namespace NetState.Tests
             await Task.Delay(1000);
 
             Assert.Equal("My test", newStateId);
-            Assert.Equal(null, prevStateId);
+            Assert.Null(prevStateId);
         }
 
         [Fact]
@@ -220,7 +220,7 @@ namespace NetState.Tests
         {
             var state1 = new State("My test");
             state1.WithTransition("DONE", "My test 2")
-            .WithInvoke((state, callback) =>
+            .WithInvoke((callback) =>
             {
                 Task.Delay(500).GetAwaiter().GetResult();
                 callback("DONE");

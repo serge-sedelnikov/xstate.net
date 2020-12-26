@@ -103,9 +103,8 @@ namespace XStateNet
         /// <summary>
         /// Service invocation delegate.
         /// </summary>
-        /// <param name="state"></param>
         /// <param name="callback"></param>
-        public delegate void InvokeServiceAsyncDelegate(State state, Action<string> callback);
+        public delegate void InvokeServiceAsyncDelegate(Action<string> callback);
 
 
         /// <summary>
@@ -181,6 +180,19 @@ namespace XStateNet
         }
 
         /// <summary>
+        /// Executes service action asyncronously and calls next state on action done, or on error.
+        /// </summary>
+        /// <param name="asyncAction">Action to execute in async way.</param>
+        /// <param name="onDoneTargetStateId">State to move to when action is done.</param>
+        /// <param name="onErrorTargetStateId">State to move on if action executed with error.</param>
+        /// <returns></returns>
+        public State WithInvoke(Action asyncAction, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
+        {
+            // return current state to be able to chain up the services.
+            return this;
+        }
+
+        /// <summary>
         /// Adds the cleanup action to chain of actions.
         /// </summary>
         /// <param name="cleanUpAction">Action to add.</param>
@@ -220,7 +232,7 @@ namespace XStateNet
 
             // create service and transition to go to after time delay
             return WithTransition(eventId, targetStateId)
-            .WithInvoke(async (state, callback) =>
+            .WithInvoke(async (callback) =>
             {
                 // wait for delay
                 // pass token if this timeout is canceled by another service invokation

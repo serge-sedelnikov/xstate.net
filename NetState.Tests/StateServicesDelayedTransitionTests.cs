@@ -121,7 +121,7 @@ namespace NetState.Tests
 
             var state1 = new State("My test");
             state1.WithDelayedTransition(TimeSpan.FromSeconds(5), "My test 2")
-            .WithInvoke(async (state, callback) =>
+            .WithInvoke(async (callback) =>
             {
                 // start counting service
                 state1ServiceRunning = true;
@@ -180,7 +180,7 @@ namespace NetState.Tests
             // wait for timeout or success if success is provided
             .WithDelayedTransition(TimeSpan.FromSeconds(5), "timedout")
             .WithTransition("SUCCESS_NO_TIMEOUT", "success")
-            .WithInvoke(async (s, callback) =>
+            .WithInvoke(async (callback) =>
             {
                 await Task.Delay(2000);
                 if (!timeout)
