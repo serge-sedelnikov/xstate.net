@@ -17,7 +17,7 @@ namespace NetState.Tests
             bool state2Triggered = false;
 
             var state1 = new State("My test");
-            state1.WithDelayedTransition(TimeSpan.FromSeconds(5), "My test 2");
+            state1.WithTimeout(TimeSpan.FromSeconds(5), "My test 2");
 
             var state2 = new State("My test 2")
             .WithActionOnEnter(() =>
@@ -52,7 +52,7 @@ namespace NetState.Tests
             bool state2Triggered = false;
 
             var state1 = new State("My test");
-            state1.WithDelayedTransition(5000, "My test 2");
+            state1.WithTimeout(5000, "My test 2");
 
             var state2 = new State("My test 2")
             .WithActionOnEnter(() =>
@@ -87,7 +87,7 @@ namespace NetState.Tests
             bool state2Triggered = false;
 
             var state1 = new State("My test");
-            state1.WithDelayedTransition(TimeSpan.FromSeconds(5), "My test 2");
+            state1.WithTimeout(TimeSpan.FromSeconds(5), "My test 2");
 
             var state2 = new State("My test 2")
             .WithActionOnEnter(() =>
@@ -111,7 +111,7 @@ namespace NetState.Tests
         }
 
         [Fact]
-        public void DelayedTransitionServicesCanceledAfterDelay()
+        public async Task DelayedTransitionServicesCanceledAfterDelay()
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -120,7 +120,7 @@ namespace NetState.Tests
             bool state2Triggered = false;
 
             var state1 = new State("My test");
-            state1.WithDelayedTransition(TimeSpan.FromSeconds(5), "My test 2")
+            state1.WithTimeout(TimeSpan.FromSeconds(5), "My test 2")
             .WithInvoke(async (callback) =>
             {
                 // start counting service
@@ -155,7 +155,7 @@ namespace NetState.Tests
             interpreter.StartStateMachine();
 
             // wait for 6 sec
-            Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
+            await Task.Delay(TimeSpan.FromSeconds(6));
             Assert.True(state2Triggered);
             Assert.False(stopwatch.IsRunning);
 
@@ -178,7 +178,7 @@ namespace NetState.Tests
             var state1 = new State("My test");
             state1
             // wait for timeout or success if success is provided
-            .WithDelayedTransition(TimeSpan.FromSeconds(5), "timedout")
+            .WithTimeout(TimeSpan.FromSeconds(5), "timedout")
             .WithTransition("SUCCESS_NO_TIMEOUT", "success")
             .WithInvoke(async (callback) =>
             {

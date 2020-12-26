@@ -261,7 +261,7 @@ namespace XStateNet
         /// </summary>
         /// <param name="delay">Time after what to make a transition</param>
         /// <param name="targetStateId">The ID of the target state.</param>
-        public State WithDelayedTransition(TimeSpan delay, string targetStateId)
+        public State WithTimeout(TimeSpan delay, string targetStateId)
         {
             var eventId = Guid.NewGuid().ToString();
             CancellationTokenSource tokenSource = new CancellationTokenSource();
@@ -292,9 +292,9 @@ namespace XStateNet
         /// </summary>
         /// <param name="miliseconds">Time after what to make a transition in miliseconds</param>
         /// <param name="targetStateId">The ID of the target state.</param>
-        public State WithDelayedTransition(int miliseconds, string targetStateId)
+        public State WithTimeout(int miliseconds, string targetStateId)
         {
-            return WithDelayedTransition(TimeSpan.FromMilliseconds(miliseconds), targetStateId);
+            return WithTimeout(TimeSpan.FromMilliseconds(miliseconds), targetStateId);
         }
 
 
