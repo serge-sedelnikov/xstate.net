@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -186,8 +187,43 @@ namespace XStateNet
         /// <param name="onDoneTargetStateId">State to move to when action is done.</param>
         /// <param name="onErrorTargetStateId">State to move on if action executed with error.</param>
         /// <returns></returns>
-        public State WithInvoke(Action asyncAction, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
+        public State WithInvoke(Func<Task> asyncAction, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
         {
+            if (asyncAction is null)
+            {
+                throw new ArgumentNullException(nameof(asyncAction));
+            }
+
+            var doneEventId = Guid.NewGuid().ToString();
+            var errorEventId = Guid.NewGuid().ToString();
+
+            // compose transitions
+            if (!string.IsNullOrEmpty(onDoneTargetStateId))
+            {
+                this.WithTransition(doneEventId, onDoneTargetStateId);
+            }
+            if (!string.IsNullOrEmpty(onErrorTargetStateId))
+            {
+                this.WithTransition(errorEventId, onErrorTargetStateId);
+            }
+
+            // create the service with callback
+            this.WithInvoke(async (callback) =>
+            {
+                try
+                {
+                    await asyncAction();
+                    if(!string.IsNullOrEmpty(onDoneTargetStateId))
+                        callback(doneEventId);
+                }
+                catch (Exception error)
+                {
+                    Debug.WriteLine(error);
+                    if(!string.IsNullOrEmpty(onErrorTargetStateId))
+                        callback(errorEventId);
+                }
+            });
+
             // return current state to be able to chain up the services.
             return this;
         }
@@ -238,7 +274,7 @@ namespace XStateNet
                 // pass token if this timeout is canceled by another service invokation
                 // NOTE!: if delay got canceled, the exception is thrown,
                 // hence we use .ContinueWith(...) to rid off unnecessary exception here.
-                await Task.Delay(delay, tokenSource.Token).ContinueWith(t => {});
+                await Task.Delay(delay, tokenSource.Token).ContinueWith(t => { });
 
                 // transition to another state only if token was not canceled
                 if (!tokenSource.IsCancellationRequested)

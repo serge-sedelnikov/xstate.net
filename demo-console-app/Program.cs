@@ -62,9 +62,9 @@ namespace demo_console_app
             };
 
             // start state machine
-            var interpreter = new Interpreter();
+            var interpreter = new Interpreter(machine);
             interpreter.OnStateChanged += OnStateChanged;
-            interpreter.StartStateMachine(machine);
+            interpreter.StartStateMachine();
 
 
             // try to get user input to be used in state machine

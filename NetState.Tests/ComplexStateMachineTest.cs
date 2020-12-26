@@ -97,8 +97,8 @@ namespace NetState.Tests
                 state1, state2
             };
 
-            Interpreter interpreter = new Interpreter();
-            interpreter.StartStateMachine(machine);
+            Interpreter interpreter = new Interpreter(machine);
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is DONE
             await Task.Delay(1000);
@@ -153,8 +153,8 @@ namespace NetState.Tests
                 failStated
             };
 
-            Interpreter interpreter = new Interpreter();
-            interpreter.StartStateMachine(machine);
+            Interpreter interpreter = new Interpreter(machine);
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
             await Task.Delay(1000);

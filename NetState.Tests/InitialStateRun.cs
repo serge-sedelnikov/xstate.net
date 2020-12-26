@@ -24,8 +24,8 @@ namespace NetState.Tests
                 state
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
             Task.Delay(2000).GetAwaiter().GetResult();
@@ -58,8 +58,8 @@ namespace NetState.Tests
                 state
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
             Task.Delay(2000).GetAwaiter().GetResult();
@@ -83,8 +83,8 @@ namespace NetState.Tests
                 state
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
             Task.Delay(2000).GetAwaiter().GetResult();
@@ -104,8 +104,8 @@ namespace NetState.Tests
                 state
             };
 
-                var interpreter = new Interpreter();
-                interpreter.StartStateMachine(stateMachine);
+                var interpreter = new Interpreter(stateMachine);
+                interpreter.StartStateMachine();
             });
         }
 
@@ -144,8 +144,8 @@ namespace NetState.Tests
                 state
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
             Task.Delay(2000).GetAwaiter().GetResult();
@@ -172,8 +172,8 @@ namespace NetState.Tests
                     state
                 };
 
-                var interpreter = new Interpreter();
-                interpreter.StartStateMachine(stateMachine);
+                var interpreter = new Interpreter(stateMachine);
+                interpreter.StartStateMachine();
 
                 await Task.Delay(1000);
             });
@@ -198,7 +198,7 @@ namespace NetState.Tests
                     state2
                 };
 
-            var interpreter = new Interpreter();
+            var interpreter = new Interpreter(stateMachine);
 
             var newStateId = "";
             var prevStateId = "";
@@ -207,7 +207,7 @@ namespace NetState.Tests
                 prevStateId = args.PreviousState?.Id;
             };
 
-            interpreter.StartStateMachine(stateMachine);
+            interpreter.StartStateMachine();
 
             await Task.Delay(1000);
 
@@ -234,7 +234,7 @@ namespace NetState.Tests
                     state2
                 };
 
-            var interpreter = new Interpreter();
+            var interpreter = new Interpreter(stateMachine);
 
             var newStateId = "";
             var prevStateId = "";
@@ -243,7 +243,7 @@ namespace NetState.Tests
                 prevStateId = args.PreviousState?.Id;
             };
 
-            interpreter.StartStateMachine(stateMachine);
+            interpreter.StartStateMachine();
 
             await Task.Delay(1000);
 

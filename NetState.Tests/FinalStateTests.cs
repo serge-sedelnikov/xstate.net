@@ -34,8 +34,8 @@ namespace NetState.Tests
                 state1
             };
 
-            Interpreter interpreter = new Interpreter();
-            interpreter.StartStateMachine(machine);
+            Interpreter interpreter = new Interpreter(machine);
+            interpreter.StartStateMachine();
 
             await Task.Delay(2000);
             isLoopRunning = true;
@@ -43,13 +43,46 @@ namespace NetState.Tests
             Assert.False(isAsyncTaskRunning);
         }
 
-        [Fact]
-        public void FinalStateExitsStateMachineOnAllServicesDone()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ActionServiceOnDoneAndError(bool error)
         {
-            State state1 = new State("state1");
-            state1.WithInvoke(() => {
+            bool state2Triggered = false;
+            bool errorStateTriggered = false;
 
+            State state1 = new State("state1");
+            state1.WithInvoke(async () => {
+                await Task.Delay(1000);
+                if(error)
+                {
+                    throw new Exception("Error in async service action");
+                }
+            }, "state2", "errorState");
+
+            State state2 = new State("state2");
+            state2.WithActionOnEnter(() => {
+                state2Triggered = true;
+                errorStateTriggered = false;
             });
+
+            State errorState = new State("errorState");
+            errorState.WithActionOnEnter(() => {
+                state2Triggered = false;
+                errorStateTriggered = true;
+            });
+
+            var machine = new StateMachine("machine1", "machine1", "state1");
+            machine.States = new []{
+                state1, state2, errorState
+            };
+            var interpreter = new Interpreter(machine);
+            interpreter.StartStateMachine();
+
+            await Task.Delay(3000);
+
+            Assert.NotEqual(error, state2Triggered);
+            Assert.Equal(error, errorStateTriggered);
         }
     }
 }

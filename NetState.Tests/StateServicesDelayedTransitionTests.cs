@@ -31,8 +31,8 @@ namespace NetState.Tests
                 state1, state2
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
             Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
@@ -66,8 +66,8 @@ namespace NetState.Tests
                 state1, state2
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
             Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
@@ -101,8 +101,8 @@ namespace NetState.Tests
                 state1, state2
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // wait for 4 sec
             Task.Delay(TimeSpan.FromSeconds(4)).GetAwaiter().GetResult();
@@ -151,8 +151,8 @@ namespace NetState.Tests
                 state1, state2
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // wait for 6 sec
             Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
@@ -213,8 +213,8 @@ namespace NetState.Tests
                 state1, timeoutState, successState
             };
 
-            var interpreter = new Interpreter();
-            interpreter.StartStateMachine(stateMachine);
+            var interpreter = new Interpreter(stateMachine);
+            interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
             Task.Delay(TimeSpan.FromSeconds(6)).GetAwaiter().GetResult();
