@@ -74,7 +74,7 @@ namespace XStateNet
         /// <param name="machine">State machine to start.</param>
         public void StartStateMachine()
         {
-            if(_stateMachine.States == null)
+            if (_stateMachine.States == null)
             {
                 throw new InvalidOperationException("States are not defined for that state machine. Define 'States' property.");
             }
@@ -99,7 +99,7 @@ namespace XStateNet
             RaiseOnStateChangedEvent(state, previousState);
 
             // callback that affects the state change.
-            var callback = new Action<string>((string eventId) =>
+            State.CallbackAction callback = (eventId, error) =>
             {
                 // execute on exit actions before moving to the next state
                 state.InvokeCleanupActions();
@@ -108,13 +108,26 @@ namespace XStateNet
                 state.InvokeExitActions();
 
                 // if this was the final state, check it and exit
-                if(state.Mode == StateMode.Final)
+                if (state.Mode == StateMode.Final)
                 {
-                    // call state machine on done handler
-                    if(_stateMachine.DoneHandler != null)
+                    // here we need to decide did we come here after error or successful execution
+                    // check if error is not null
+                    if (error != null)
                     {
-                        _stateMachine.DoneHandler();
+                        if (_stateMachine.ErrorHandler != null)
+                        {
+                            _stateMachine.ErrorHandler(error);
+                        }
                     }
+                    else
+                    {
+                        // call state machine on done handler
+                        if (_stateMachine.DoneHandler != null)
+                        {
+                            _stateMachine.DoneHandler();
+                        }
+                    }
+
                     // stop the state machine execution
                     return;
                 }
@@ -138,7 +151,7 @@ namespace XStateNet
 
                 // invoke next state, provising previous state for event raising
                 Invoke(nextState, state);
-            });
+            };
 
 
             // execute all on entry actions one by one

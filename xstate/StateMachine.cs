@@ -31,6 +31,12 @@ namespace XStateNet
         public Action DoneHandler { get; set; }
 
         /// <summary>
+        /// Executes every time there is an error in state machine.
+        /// </summary>
+        /// <value></value>
+        public Action<Exception> ErrorHandler { get; set; }
+
+        /// <summary>
         /// Creates the state machine.
         /// </summary>
         /// <param name="id">ID of the state machine.</param>

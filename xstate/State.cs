@@ -102,11 +102,17 @@ namespace XStateNet
         public List<Action> Activities { get => _activities; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <param name="error"></param>
+        public delegate void CallbackAction(string eventId, Exception error = null);
+
+        /// <summary>
         /// Service invocation delegate.
         /// </summary>
         /// <param name="callback"></param>
-        public delegate void InvokeServiceAsyncDelegate(Action<string> callback);
-
+        public delegate void InvokeServiceAsyncDelegate(CallbackAction callback);
 
         /// <summary>
         /// The mode of the state, represents the state is either normal, final or transient.
@@ -195,17 +201,16 @@ namespace XStateNet
             }
 
             var doneEventId = Guid.NewGuid().ToString();
+            // mark error exit event as error so we can distinct those
+            // there is no way user will use callback with this event name in real life
             var errorEventId = Guid.NewGuid().ToString();
 
             // compose transitions
             // if done state is not given, move to the same state
             this.WithTransition(doneEventId, onDoneTargetStateId);
 
-
-            if (!string.IsNullOrEmpty(onErrorTargetStateId))
-            {
-                this.WithTransition(errorEventId, onErrorTargetStateId);
-            }
+            // compose transition to run on error case
+            this.WithTransition(errorEventId, onErrorTargetStateId);
 
             // create the service with callback
             this.WithInvoke(async (callback) =>
@@ -218,8 +223,8 @@ namespace XStateNet
                 catch (Exception error)
                 {
                     Debug.WriteLine(error);
-                    if(!string.IsNullOrEmpty(onErrorTargetStateId))
-                        callback(errorEventId);
+                    // provide the error to callback
+                    callback(errorEventId, error);
                 }
             });
 
