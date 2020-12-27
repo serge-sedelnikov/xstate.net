@@ -162,5 +162,109 @@ namespace NetState.Tests
             Assert.Equal(failure, failed);
             Assert.NotEqual(failure, done);
         }
+
+        [Fact]
+        public async Task AsyncStateCanceledOnNormalStateTransition()
+        {
+            // this is quite rare case, normally those services are not mixed
+            bool state1Finalized = false;
+            bool state1CleanedUp = false;
+            bool normalStateTransitionHappened = false;
+            bool asyncStateTransitionHappened = false;
+
+            State state1 = new State("state1")
+            .WithInvoke(async (cancel) =>
+            {
+                await Task.Delay(2000);
+                // this should be checked, if cancel was requested, this is optional but valuable feature
+                if (!cancel.IsCancellationRequested)
+                    state1Finalized = true;
+            }, "asyncStateTransition")
+            .WithInvoke(async (callback) =>
+            {
+                await Task.Delay(500);
+                callback("NORMAL_CALLBACK_CALLED");
+            })
+            .WithTransition("NORMAL_CALLBACK_CALLED", "normalStateTransition")
+            .WithActionOnExit(() =>
+            {
+                state1CleanedUp = true;
+            });
+
+            State state2 = new State("normalStateTransition")
+            .WithActionOnEnter(() =>
+            {
+                // this should happen
+                normalStateTransitionHappened = true;
+            });
+
+            State state3 = new State("asyncStateTransition")
+            .WithActionOnEnter(() =>
+            {
+                // this should never happen
+                asyncStateTransitionHappened = true;
+            });
+
+            var machine = new StateMachine("machine1", "machine2", "state1", state1, state2, state3);
+            var interpreter = new Interpreter(machine);
+            interpreter.StartStateMachine();
+
+            await Task.Delay(3000);
+            Assert.False(state1Finalized);
+            Assert.True(state1CleanedUp);
+            Assert.True(normalStateTransitionHappened);
+            Assert.False(asyncStateTransitionHappened);
+        }
+
+        [Fact]
+        public async Task AsyncStateCanceledOnAsyncStateTransition()
+        {
+            // this is quite rare case, normally those services are not mixed
+            bool state1Finalized = false;
+            bool state1CleanedUp = false;
+            bool normalStateTransitionHappened = false;
+            bool asyncStateTransitionHappened = false;
+
+            State state1 = new State("state1")
+            .WithInvoke(async (cancel) =>
+            {
+                await Task.Delay(2000);
+                // this should be checked, if cancel was requested, this is optional but valuable feature
+                if (!cancel.IsCancellationRequested)
+                    state1Finalized = true;
+            }, "asyncStateTransition")
+            .WithInvoke(async (cancel) =>
+            {
+                await Task.Delay(500);
+            }, "normalStateTransition")
+            .WithActionOnExit(() =>
+            {
+                state1CleanedUp = true;
+            });
+
+            State state2 = new State("normalStateTransition")
+            .WithActionOnEnter(() =>
+            {
+                // this should happen
+                normalStateTransitionHappened = true;
+            });
+
+            State state3 = new State("asyncStateTransition")
+            .WithActionOnEnter(() =>
+            {
+                // this should never happen
+                asyncStateTransitionHappened = true;
+            });
+
+            var machine = new StateMachine("machine1", "machine2", "state1", state1, state2, state3);
+            var interpreter = new Interpreter(machine);
+            interpreter.StartStateMachine();
+
+            await Task.Delay(3000);
+            Assert.False(state1Finalized);
+            Assert.True(state1CleanedUp);
+            Assert.True(normalStateTransitionHappened);
+            Assert.False(asyncStateTransitionHappened);
+        }
     }
 }

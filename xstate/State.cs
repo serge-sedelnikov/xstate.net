@@ -102,11 +102,24 @@ namespace XStateNet
         public List<Action> Activities { get => _activities; }
 
         /// <summary>
+        /// The delegate to call to notify state machine that certain event had happened. With optional error.
+        /// </summary>
+        /// <param name="eventId">ID of the event to call.</param>
+        /// <param name="error">Optional error if happened during the execution.</param>
+        public delegate void CallbackAction(string eventId, Exception error = null);
+
+        /// <summary>
+        /// The service action to be executed on async service with optional cancellation token.
+        /// </summary>
+        /// <param name="cancellationTokenSource"></param>
+        /// <returns></returns>
+        public delegate Task AsyncCancelableAction(CancellationToken cancellationToken);
+
+        /// <summary>
         /// Service invocation delegate.
         /// </summary>
-        /// <param name="callback"></param>
-        public delegate void InvokeServiceAsyncDelegate(Action<string> callback);
-
+        /// <param name="callback">Callback to notify the state machine state is transitioning.</param>
+        public delegate void InvokeServiceAsyncDelegate(CallbackAction callback);
 
         /// <summary>
         /// The mode of the state, represents the state is either normal, final or transient.
@@ -187,7 +200,7 @@ namespace XStateNet
         /// <param name="onDoneTargetStateId">State to move to when action is done.</param>
         /// <param name="onErrorTargetStateId">State to move on if action executed with error.</param>
         /// <returns></returns>
-        public State WithInvoke(Func<Task> asyncAction, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
+        public State WithInvoke(AsyncCancelableAction asyncAction, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
         {
             if (asyncAction is null)
             {
@@ -195,33 +208,38 @@ namespace XStateNet
             }
 
             var doneEventId = Guid.NewGuid().ToString();
+            // mark error exit event as error so we can distinct those
+            // there is no way user will use callback with this event name in real life
             var errorEventId = Guid.NewGuid().ToString();
 
+            var cancelSource = new CancellationTokenSource();
+
             // compose transitions
-            if (!string.IsNullOrEmpty(onDoneTargetStateId))
-            {
-                this.WithTransition(doneEventId, onDoneTargetStateId);
-            }
-            if (!string.IsNullOrEmpty(onErrorTargetStateId))
-            {
-                this.WithTransition(errorEventId, onErrorTargetStateId);
-            }
+            // if done state is not given, move to the same state
+            this.WithTransition(doneEventId, onDoneTargetStateId);
+
+            // compose transition to run on error case
+            this.WithTransition(errorEventId, onErrorTargetStateId);
 
             // create the service with callback
             this.WithInvoke(async (callback) =>
             {
                 try
                 {
-                    await asyncAction();
-                    if(!string.IsNullOrEmpty(onDoneTargetStateId))
+                    await asyncAction(cancelSource.Token);
+                    if(!cancelSource.IsCancellationRequested)
                         callback(doneEventId);
                 }
                 catch (Exception error)
                 {
                     Debug.WriteLine(error);
-                    if(!string.IsNullOrEmpty(onErrorTargetStateId))
-                        callback(errorEventId);
+                    // provide the error to callback
+                    if(!cancelSource.IsCancellationRequested)
+                        callback(errorEventId, error);
                 }
+            }, () => {
+                // if this service execution was canceled by other service, mark it as canceled
+                cancelSource.Cancel();
             });
 
             // return current state to be able to chain up the services.
@@ -373,6 +391,16 @@ namespace XStateNet
         {
             this._mode = StateMode.Transient;
             return this.WithTransition("", targetStateId);
+        }
+
+        /// <summary>
+        /// Sets the state as final state. Final state can execute only the async service without onDoneTargetStateId, so
+        /// as soon as async service is done executing, and no error is thrown, the state machine exits with Done handler or Error handler.
+        /// </summary>
+        public State AsFinalState()
+        {
+            this._mode = StateMode.Final;
+            return this;
         }
     }
 }

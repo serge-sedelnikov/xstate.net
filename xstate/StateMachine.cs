@@ -25,12 +25,25 @@ namespace XStateNet
         public string InitialStateId { get => _initialStateId; }
 
         /// <summary>
+        /// Executes when state machien is exiting with success. To do so the state machien must have at least one final state.
+        /// </summary>
+        /// <value></value>
+        public Action DoneHandler { get; set; }
+
+        /// <summary>
+        /// Executes every time there is an error in state machine.
+        /// </summary>
+        /// <value></value>
+        public Action<Exception> ErrorHandler { get; set; }
+
+        /// <summary>
         /// Creates the state machine.
         /// </summary>
         /// <param name="id">ID of the state machine.</param>
         /// <param name="name">Name of the state machine.</param>
         /// <param name="initialStateId">Initial state ID that the machine will start from.</param>
-        public StateMachine(string id, string name, string initialStateId)
+        /// <param name="states">Array of states for this state machine.</param>
+        public StateMachine(string id, string name, string initialStateId, params State[] states)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -49,6 +62,7 @@ namespace XStateNet
             _initialStateId = initialStateId;
             _id = id;
             _name = name;
+            States = states;
         }
     }
 }
