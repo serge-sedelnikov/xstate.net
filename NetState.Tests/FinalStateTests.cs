@@ -52,7 +52,7 @@ namespace NetState.Tests
             bool errorStateTriggered = false;
 
             State state1 = new State("state1");
-            state1.WithInvoke(async () => {
+            state1.WithInvoke(async (cancel) => {
                 await Task.Delay(1000);
                 if(error)
                 {
@@ -93,7 +93,7 @@ namespace NetState.Tests
 
             State state1 = new State("state1");
             state1.AsFinalState()
-            .WithInvoke(async () => {
+            .WithInvoke(async (cancel) => {
                 await Task.Delay(100);
             });
 
@@ -120,7 +120,7 @@ namespace NetState.Tests
             string currentStateId = "";
 
             State state1 = new State("state1");
-            state1.WithInvoke(async () => {
+            state1.WithInvoke(async (cancel) => {
                 await Task.Delay(100);
             });
 
@@ -151,7 +151,7 @@ namespace NetState.Tests
 
             State state1 = new State("state1");
             state1.AsFinalState()
-            .WithInvoke(async () => {
+            .WithInvoke(async (cancel) => {
                 await Task.Delay(100);
                 throw new Exception("Error in state execution.");
             });

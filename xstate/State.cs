@@ -102,11 +102,18 @@ namespace XStateNet
         public List<Action> Activities { get => _activities; }
 
         /// <summary>
-        /// 
+        /// The delegate to call to notify state machine that certain event had happened. With optional error.
         /// </summary>
         /// <param name="eventId">ID of the event to call.</param>
         /// <param name="error">Optional error if happened during the execution.</param>
         public delegate void CallbackAction(string eventId, Exception error = null);
+
+        /// <summary>
+        /// The service action to be executed on async service with optional cancellation token.
+        /// </summary>
+        /// <param name="cancellationTokenSource"></param>
+        /// <returns></returns>
+        public delegate Task AsyncCancelableAction(CancellationToken cancellationToken);
 
         /// <summary>
         /// Service invocation delegate.
@@ -193,7 +200,7 @@ namespace XStateNet
         /// <param name="onDoneTargetStateId">State to move to when action is done.</param>
         /// <param name="onErrorTargetStateId">State to move on if action executed with error.</param>
         /// <returns></returns>
-        public State WithInvoke(Func<Task> asyncAction, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
+        public State WithInvoke(AsyncCancelableAction asyncAction, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
         {
             if (asyncAction is null)
             {
@@ -204,6 +211,8 @@ namespace XStateNet
             // mark error exit event as error so we can distinct those
             // there is no way user will use callback with this event name in real life
             var errorEventId = Guid.NewGuid().ToString();
+
+            var cancelSource = new CancellationTokenSource();
 
             // compose transitions
             // if done state is not given, move to the same state
@@ -217,15 +226,20 @@ namespace XStateNet
             {
                 try
                 {
-                    await asyncAction();
-                    callback(doneEventId);
+                    await asyncAction(cancelSource.Token);
+                    if(!cancelSource.IsCancellationRequested)
+                        callback(doneEventId);
                 }
                 catch (Exception error)
                 {
                     Debug.WriteLine(error);
                     // provide the error to callback
-                    callback(errorEventId, error);
+                    if(!cancelSource.IsCancellationRequested)
+                        callback(errorEventId, error);
                 }
+            }, () => {
+                // if this service execution was canceled by other service, mark it as canceled
+                cancelSource.Cancel();
             });
 
             // return current state to be able to chain up the services.
