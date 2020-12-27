@@ -101,21 +101,23 @@ namespace XStateNet
             // callback that affects the state change.
             var callback = new Action<string>((string eventId) =>
             {
-                if (!state.Transitions.ContainsKey(eventId))
-                {
-                    // if there is no next state to navigate to, and if state is final, we allow it
-                    if (state.Mode == StateMode.Final)
-                    {
-                        // TODO: execute onDone for state machine
-                        return;
-                    }
-                }
-
                 // execute on exit actions before moving to the next state
                 state.InvokeCleanupActions();
 
                 // invoke on exit actions
                 state.InvokeExitActions();
+
+                // if this was the final state, check it and exit
+                if(state.Mode == StateMode.Final)
+                {
+                    // call state machine on done handler
+                    if(_stateMachine.DoneHandler != null)
+                    {
+                        _stateMachine.DoneHandler();
+                    }
+                    // stop the state machine execution
+                    return;
+                }
 
                 // check next state
                 var nextStateId = state.Transitions[eventId];

@@ -84,5 +84,62 @@ namespace NetState.Tests
             Assert.NotEqual(error, state2Triggered);
             Assert.Equal(error, errorStateTriggered);
         }
+
+        [Fact]
+        public async Task StateMachineExitsOnFinalState()
+        {
+            bool machineIsDone = false;
+            string currentStateId = "";
+
+            State state1 = new State("state1");
+            state1.AsFinalState()
+            .WithInvoke(async () => {
+                await Task.Delay(100);
+            });
+
+            var machine = new StateMachine("machine1", "machine1", "state1", state1);
+            // subscribe for done handler.
+            machine.DoneHandler = () => {
+                machineIsDone = true;
+            };
+
+            var interpreter = new Interpreter(machine);
+            interpreter.OnStateChanged += (sender, args) => {
+                currentStateId = args.State.Id;
+            };
+            interpreter.StartStateMachine();
+
+            await Task.Delay(500);
+            Assert.True(machineIsDone);
+        }
+
+        [Fact]
+        public async Task StateMachineDoesNotExitsWithoutFinalState()
+        {
+            bool machineIsDone = false;
+            string currentStateId = "";
+
+            State state1 = new State("state1");
+            state1.WithInvoke(async () => {
+                await Task.Delay(100);
+            });
+
+            var machine = new StateMachine("machine1", "machine1", "state1", state1);
+            // subscribe for done handler.
+            machine.DoneHandler = () => {
+                machineIsDone = true;
+            };
+
+            var interpreter = new Interpreter(machine);
+            interpreter.OnStateChanged += (sender, args) => {
+                currentStateId = args.State.Id;
+            };
+
+            interpreter.StartStateMachine();
+
+            await Task.Delay(500);
+            Assert.False(machineIsDone);
+            Assert.Equal("state1", currentStateId);
+        }
     }
 }

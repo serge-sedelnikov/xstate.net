@@ -198,10 +198,10 @@ namespace XStateNet
             var errorEventId = Guid.NewGuid().ToString();
 
             // compose transitions
-            if (!string.IsNullOrEmpty(onDoneTargetStateId))
-            {
-                this.WithTransition(doneEventId, onDoneTargetStateId);
-            }
+            // if done state is not given, move to the same state
+            this.WithTransition(doneEventId, onDoneTargetStateId);
+
+
             if (!string.IsNullOrEmpty(onErrorTargetStateId))
             {
                 this.WithTransition(errorEventId, onErrorTargetStateId);
@@ -213,8 +213,7 @@ namespace XStateNet
                 try
                 {
                     await asyncAction();
-                    if(!string.IsNullOrEmpty(onDoneTargetStateId))
-                        callback(doneEventId);
+                    callback(doneEventId);
                 }
                 catch (Exception error)
                 {
@@ -373,6 +372,16 @@ namespace XStateNet
         {
             this._mode = StateMode.Transient;
             return this.WithTransition("", targetStateId);
+        }
+
+        /// <summary>
+        /// Sets the state as final state. Final state can execute only the async service without onDoneTargetStateId, so
+        /// as soon as async service is done executing, and no error is thrown, the state machine exits with Done handler or Error handler.
+        /// </summary>
+        public State AsFinalState()
+        {
+            this._mode = StateMode.Final;
+            return this;
         }
     }
 }
