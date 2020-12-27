@@ -104,14 +104,14 @@ namespace XStateNet
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="eventId"></param>
-        /// <param name="error"></param>
+        /// <param name="eventId">ID of the event to call.</param>
+        /// <param name="error">Optional error if happened during the execution.</param>
         public delegate void CallbackAction(string eventId, Exception error = null);
 
         /// <summary>
         /// Service invocation delegate.
         /// </summary>
-        /// <param name="callback"></param>
+        /// <param name="callback">Callback to notify the state machine state is transitioning.</param>
         public delegate void InvokeServiceAsyncDelegate(CallbackAction callback);
 
         /// <summary>
