@@ -41,15 +41,12 @@ namespace NetState.Tests
             var state = new State("My test");
             state.WithActionOnEnter(() =>
             {
-                Console.WriteLine("1");
                 onEnterActionRun += 1;
             }).WithActionOnEnter(() =>
             {
-                Console.WriteLine("2");
                 onEnterActionRun += 1;
             }).WithActionOnEnter(() =>
             {
-                Console.WriteLine("3");
                 onEnterActionRun += 1;
             });
 
@@ -122,7 +119,6 @@ namespace NetState.Tests
             {
                 // executed in parallel
                 thread1 = Task.CurrentId.GetValueOrDefault();
-                Console.WriteLine(thread1);
                 lock (lockObject)
                 {
                     serviceExecuted += 1;
@@ -132,7 +128,6 @@ namespace NetState.Tests
             {
                 // executed in parallel
                 thread2 = Task.CurrentId.GetValueOrDefault();
-                Console.WriteLine(thread2);
                 lock (lockObject)
                 {
                     serviceExecuted += 1;
@@ -220,7 +215,7 @@ namespace NetState.Tests
             state1.WithTransition("DONE", "My test 2")
             .WithInvoke(async (callback) =>
             {
-                await Task.Delay(500);
+                await Task.Delay(100);
                 callback("DONE");
             });
 

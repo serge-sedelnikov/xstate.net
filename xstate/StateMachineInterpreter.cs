@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace XStateNet
@@ -53,19 +54,58 @@ namespace XStateNet
         public event StateChangedEventHandler OnStateChanged;
 
         /// <summary>
+        /// Executes every time the state machien is exiting the final state with success.
+        /// </summary>
+        public event EventHandler OnStateMachineDone;
+
+        /// <summary>
+        /// Executes every time when state machine throws error.
+        /// </summary>
+        public event UnhandledExceptionEventHandler OnStateMachineError;
+
+        /// <summary>
         /// State machine.
         /// </summary>
         private StateMachine _stateMachine;
+
+        private CancellationTokenSource _cancelationTokenSource;
 
         public Interpreter(StateMachine machine)
         {
             _stateMachine = machine ?? throw new ArgumentNullException(nameof(machine));
         }
 
+        /// <summary>
+        /// Raises the state change event.
+        /// </summary>
+        /// <param name="newState">New state the machine has switched to.</param>
+        /// <param name="previousState">Previous state the machine has switched from.</param>
         private void RaiseOnStateChangedEvent(State newState, State previousState)
         {
             StateChangedEventHandler handler = OnStateChanged;
             handler?.Invoke(this, new StateChangeEventArgs(newState, previousState));
+        }
+
+        /// <summary>
+        /// Raises the on done event.
+        /// </summary>
+        private void RaiseOnStateMachineDone()
+        {
+            _cancelationTokenSource.Dispose();
+            _cancelationTokenSource = null;
+
+            EventHandler handler = OnStateMachineDone;
+            handler?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Raises the state change event.
+        /// </summary>
+        /// <param name="error">Error to provide to the event.</param>
+        private void RaiseOnStateMachineError(Exception error)
+        {
+            UnhandledExceptionEventHandler handler = OnStateMachineError;
+            handler?.Invoke(this, new UnhandledExceptionEventArgs(error, false));
         }
 
         /// <summary>
@@ -74,6 +114,11 @@ namespace XStateNet
         /// <param name="machine">State machine to start.</param>
         public void StartStateMachine()
         {
+            if (_cancelationTokenSource != null)
+            {
+                throw new InvalidOperationException("The state machine is already running. Wait for the state machien to exit or force it to stop.");
+            }
+
             if (_stateMachine.States == null)
             {
                 throw new InvalidOperationException("States are not defined for that state machine. Define 'States' property.");
@@ -85,6 +130,9 @@ namespace XStateNet
                 throw new InvalidOperationException("Initial state is not defined for the state machine or not found. Define the correct initial state.");
             }
 
+            // create the cancellation token to track if state machine was forced to close.
+            _cancelationTokenSource = new CancellationTokenSource();
+
             // start invoking the state asyncronously
             Task.Run(() => Invoke(initialState));
         }
@@ -95,6 +143,18 @@ namespace XStateNet
         /// <param name="state"></param>
         private void Invoke(State state, State previousState = null)
         {
+            // check if state machine was forced to stop
+            if(_cancelationTokenSource.IsCancellationRequested)
+            {
+                // dispose token
+                _cancelationTokenSource.Dispose();
+                _cancelationTokenSource = null;
+                // notify that the state machine was exited
+                RaiseOnStateMachineError(new OperationCanceledException("The state machine execution was canceled by user."));
+                // force to exit
+                return;
+            }
+
             // raise state changed event
             RaiseOnStateChangedEvent(state, previousState);
 
@@ -114,18 +174,13 @@ namespace XStateNet
                     // check if error is not null
                     if (error != null)
                     {
-                        if (_stateMachine.ErrorHandler != null)
-                        {
-                            _stateMachine.ErrorHandler(error);
-                        }
+                        // raise event that machine has error.
+                        RaiseOnStateMachineError(error);
                     }
                     else
                     {
                         // call state machine on done handler
-                        if (_stateMachine.DoneHandler != null)
-                        {
-                            _stateMachine.DoneHandler();
-                        }
+                        RaiseOnStateMachineDone();
                     }
 
                     // stop the state machine execution
@@ -177,6 +232,17 @@ namespace XStateNet
                 // run the activities in own thread.
                 Task.Run(() => d());
             });
+        }
+
+        /// <summary>
+        /// Forces the state machine to be stopped. This method will call an event OnStateMachineError.
+        /// </summary>
+        public void ForceStopStateMachine()
+        {
+            if (_cancelationTokenSource != null)
+            {
+                _cancelationTokenSource.Cancel();
+            }
         }
     }
 }

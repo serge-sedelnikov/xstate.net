@@ -208,14 +208,11 @@ namespace XStateNet
             }
 
             var doneEventId = Guid.NewGuid().ToString();
-            // mark error exit event as error so we can distinct those
-            // there is no way user will use callback with this event name in real life
             var errorEventId = Guid.NewGuid().ToString();
 
             var cancelSource = new CancellationTokenSource();
 
             // compose transitions
-            // if done state is not given, move to the same state
             this.WithTransition(doneEventId, onDoneTargetStateId);
 
             // compose transition to run on error case
@@ -227,23 +224,97 @@ namespace XStateNet
                 try
                 {
                     await asyncAction(cancelSource.Token);
-                    if(!cancelSource.IsCancellationRequested)
+                    if (!cancelSource.IsCancellationRequested)
                         callback(doneEventId);
                 }
                 catch (Exception error)
                 {
                     Debug.WriteLine(error);
                     // provide the error to callback
-                    if(!cancelSource.IsCancellationRequested)
+                    if (!cancelSource.IsCancellationRequested)
                         callback(errorEventId, error);
                 }
-            }, () => {
-                // if this service execution was canceled by other service, mark it as canceled
-                cancelSource.Cancel();
+            }, () =>
+            {
+                // if the service was canceled by another service switch, use it here
+                try
+                {
+                    // if this service execution was canceled by other service, mark it as canceled
+                    cancelSource.Cancel();
+                    cancelSource.Dispose();
+                }
+                catch (ObjectDisposedException error)
+                {
+                    // this error is expected if the cleanup method called twise, 
+                    // ignore it here, but throw on any other exception.
+                    // the coce can be called twise when another service exits and calls all cleanup code
+                    // and then self service exits and calls same clean up code.
+                    Debug.WriteLine(error);
+                }
             });
 
             // return current state to be able to chain up the services.
             return this;
+        }
+
+        /// <summary>
+        /// Executes the given state machine, then on machine done, moved to the onDoneTargetStateId, or in case of error, to onErrorTargetStateId.
+        /// </summary>
+        /// <param name="machine">State machine to execute. The machine must have a final state to be able to exit.</param>
+        /// <param name="onDoneTargetStateId">State to move to when action is done.</param>
+        /// <param name="onErrorTargetStateId">State to move on if action executed with error.</param>
+        /// <returns></returns>
+        public State WithInvoke(StateMachine machine, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
+        {
+            if (machine is null)
+            {
+                throw new ArgumentNullException(nameof(machine));
+            }
+
+            var doneEventId = Guid.NewGuid().ToString();
+            var errorEventId = Guid.NewGuid().ToString();
+            var cancelSource = new CancellationTokenSource();
+
+            // compose transitions
+            this.WithTransition(doneEventId, onDoneTargetStateId);
+
+            // compose transition to run on error case
+            this.WithTransition(errorEventId, onErrorTargetStateId);
+
+            return this.WithInvoke((callback) =>
+            {
+                var interpreter = new Interpreter(machine);
+                interpreter.OnStateMachineDone += (sender, args) =>
+                {
+                    callback(doneEventId);
+                };
+                interpreter.OnStateMachineError += (sender, args) =>
+                {
+                    callback(errorEventId, args.ExceptionObject as Exception);
+                };
+                interpreter.StartStateMachine();
+
+                cancelSource.Token.Register(() =>
+                {
+                    interpreter.ForceStopStateMachine();
+                });
+            }, () =>
+            {
+                // if the service was canceled by another service switch, use it here
+                try
+                {
+                    cancelSource.Cancel();
+                    cancelSource.Dispose();
+                }
+                catch (ObjectDisposedException error)
+                {
+                    // this error is expected if the cleanup method called twise, 
+                    // ignore it here, but throw on any other exception.
+                    // the coce can be called twise when another service exits and calls all cleanup code
+                    // and then self service exits and calls same clean up code.
+                    Debug.WriteLine(error);
+                }
+            });
         }
 
         /// <summary>
