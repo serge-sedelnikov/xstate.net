@@ -53,6 +53,16 @@ namespace XStateNet
         public event StateChangedEventHandler OnStateChanged;
 
         /// <summary>
+        /// Executes every time the state machien is exiting the final state with success.
+        /// </summary>
+        public event EventHandler OnStateMachineDone;
+
+        /// <summary>
+        /// Executes every time when state machine throws error.
+        /// </summary>
+        public event UnhandledExceptionEventHandler OnStateMachineError;
+
+        /// <summary>
         /// State machine.
         /// </summary>
         private StateMachine _stateMachine;
@@ -62,10 +72,34 @@ namespace XStateNet
             _stateMachine = machine ?? throw new ArgumentNullException(nameof(machine));
         }
 
+        /// <summary>
+        /// Raises the state change event.
+        /// </summary>
+        /// <param name="newState">New state the machine has switched to.</param>
+        /// <param name="previousState">Previous state the machine has switched from.</param>
         private void RaiseOnStateChangedEvent(State newState, State previousState)
         {
             StateChangedEventHandler handler = OnStateChanged;
             handler?.Invoke(this, new StateChangeEventArgs(newState, previousState));
+        }
+
+        /// <summary>
+        /// Raises the on done event.
+        /// </summary>
+        private void RaiseOnStateMachineDone()
+        {
+            EventHandler handler = OnStateMachineDone;
+            handler?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Raises the state change event.
+        /// </summary>
+        /// <param name="error">Error to provide to the event.</param>
+        private void RaiseOnStateChangedEvent(Exception error)
+        {
+            UnhandledExceptionEventHandler handler = OnStateMachineError;
+            handler?.Invoke(this, new UnhandledExceptionEventArgs(error, false));
         }
 
         /// <summary>
