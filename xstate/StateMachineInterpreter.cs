@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace XStateNet
@@ -67,6 +68,8 @@ namespace XStateNet
         /// </summary>
         private StateMachine _stateMachine;
 
+        private CancellationTokenSource _cancelationTokenSource;
+
         public Interpreter(StateMachine machine)
         {
             _stateMachine = machine ?? throw new ArgumentNullException(nameof(machine));
@@ -88,6 +91,9 @@ namespace XStateNet
         /// </summary>
         private void RaiseOnStateMachineDone()
         {
+            _cancelationTokenSource.Dispose();
+            _cancelationTokenSource = null;
+
             EventHandler handler = OnStateMachineDone;
             handler?.Invoke(this, EventArgs.Empty);
         }
@@ -108,6 +114,11 @@ namespace XStateNet
         /// <param name="machine">State machine to start.</param>
         public void StartStateMachine()
         {
+            if (_cancelationTokenSource != null)
+            {
+                throw new InvalidOperationException("The state machine is already running. Wait for the state machien to exit or force it to stop.");
+            }
+
             if (_stateMachine.States == null)
             {
                 throw new InvalidOperationException("States are not defined for that state machine. Define 'States' property.");
@@ -119,6 +130,9 @@ namespace XStateNet
                 throw new InvalidOperationException("Initial state is not defined for the state machine or not found. Define the correct initial state.");
             }
 
+            // create the cancellation token to track if state machine was forced to close.
+            _cancelationTokenSource = new CancellationTokenSource();
+
             // start invoking the state asyncronously
             Task.Run(() => Invoke(initialState));
         }
@@ -129,6 +143,18 @@ namespace XStateNet
         /// <param name="state"></param>
         private void Invoke(State state, State previousState = null)
         {
+            // check if state machine was forced to stop
+            if(_cancelationTokenSource.IsCancellationRequested)
+            {
+                // dispose token
+                _cancelationTokenSource.Dispose();
+                _cancelationTokenSource = null;
+                // notify that the state machine was exited
+                RaiseOnStateMachineError(new OperationCanceledException("The state machine execution was canceled by user."));
+                // force to exit
+                return;
+            }
+
             // raise state changed event
             RaiseOnStateChangedEvent(state, previousState);
 
@@ -206,6 +232,17 @@ namespace XStateNet
                 // run the activities in own thread.
                 Task.Run(() => d());
             });
+        }
+
+        /// <summary>
+        /// Forces the state machine to be stopped. This method will call an event OnStateMachineError.
+        /// </summary>
+        public void ForceStopStateMachine()
+        {
+            if (_cancelationTokenSource != null)
+            {
+                _cancelationTokenSource.Cancel();
+            }
         }
     }
 }

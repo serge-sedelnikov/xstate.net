@@ -240,10 +240,46 @@ namespace XStateNet
             }, () => {
                 // if this service execution was canceled by other service, mark it as canceled
                 cancelSource.Cancel();
+                cancelSource.Dispose();
             });
 
             // return current state to be able to chain up the services.
             return this;
+        }
+
+        /// <summary>
+        /// Executes the given state machine, then on machine done, moved to the onDoneTargetStateId, or in case of error, to onErrorTargetStateId.
+        /// </summary>
+        /// <param name="machine">State machine to execute. The machine must have a final state to be able to exit.</param>
+        /// <param name="onDoneTargetStateId">State to move to when action is done.</param>
+        /// <param name="onErrorTargetStateId">State to move on if action executed with error.</param>
+        /// <returns></returns>
+        public State WithInvoke(StateMachine machine, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
+        {
+            if (machine is null)
+            {
+                throw new ArgumentNullException(nameof(machine));
+            }
+
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+            return this.WithInvoke((callback) => {
+                var interpreter = new Interpreter(machine);
+                interpreter.OnStateMachineDone += (sender, args) => {
+                    
+                };
+                interpreter.OnStateMachineError += (sender, args) => {
+
+                };
+
+                tokenSource.Token.Register(() => {
+                    interpreter.ForceStopStateMachine();
+                    tokenSource.Dispose();
+                });
+            }, () => {
+                // if the service was canceled by another service switch, use it here
+                tokenSource.Cancel();
+            });
         }
 
         /// <summary>
