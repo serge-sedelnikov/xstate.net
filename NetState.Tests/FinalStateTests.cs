@@ -98,12 +98,13 @@ namespace NetState.Tests
             });
 
             var machine = new StateMachine("machine1", "machine1", "state1", state1);
+            
+            var interpreter = new Interpreter(machine);
             // subscribe for done handler.
-            machine.DoneHandler = () => {
+            interpreter.OnStateMachineDone += (sender, args) => {
                 machineIsDone = true;
             };
-
-            var interpreter = new Interpreter(machine);
+            // subscribe for state change events
             interpreter.OnStateChanged += (sender, args) => {
                 currentStateId = args.State.Id;
             };
@@ -125,12 +126,11 @@ namespace NetState.Tests
             });
 
             var machine = new StateMachine("machine1", "machine1", "state1", state1);
-            // subscribe for done handler.
-            machine.DoneHandler = () => {
-                machineIsDone = true;
-            };
 
             var interpreter = new Interpreter(machine);
+            interpreter.OnStateMachineDone += (sender, args) => {
+                machineIsDone = true;
+            };
             interpreter.OnStateChanged += (sender, args) => {
                 currentStateId = args.State.Id;
             };
@@ -157,17 +157,16 @@ namespace NetState.Tests
             });
 
             var machine = new StateMachine("machine1", "machine1", "state1", state1);
-            // subscribe for done handler.
-            machine.DoneHandler = () => {
-                machineIsDone = true;
-            };
-
-            // subscribe for error
-            machine.ErrorHandler = (e) => {
-                error = e;
-            };
 
             var interpreter = new Interpreter(machine);
+
+            interpreter.OnStateMachineDone += (sender, args) => {
+                machineIsDone = true;
+            };
+            interpreter.OnStateMachineError += (sender, args) => {
+                error = args.ExceptionObject as Exception;
+            };
+
             interpreter.OnStateChanged += (sender, args) => {
                 currentStateId = args.State.Id;
             };

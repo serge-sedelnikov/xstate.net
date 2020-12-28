@@ -96,7 +96,7 @@ namespace XStateNet
         /// Raises the state change event.
         /// </summary>
         /// <param name="error">Error to provide to the event.</param>
-        private void RaiseOnStateChangedEvent(Exception error)
+        private void RaiseOnStateMachineError(Exception error)
         {
             UnhandledExceptionEventHandler handler = OnStateMachineError;
             handler?.Invoke(this, new UnhandledExceptionEventArgs(error, false));
@@ -148,18 +148,13 @@ namespace XStateNet
                     // check if error is not null
                     if (error != null)
                     {
-                        if (_stateMachine.ErrorHandler != null)
-                        {
-                            _stateMachine.ErrorHandler(error);
-                        }
+                        // raise event that machine has error.
+                        RaiseOnStateMachineError(error);
                     }
                     else
                     {
                         // call state machine on done handler
-                        if (_stateMachine.DoneHandler != null)
-                        {
-                            _stateMachine.DoneHandler();
-                        }
+                        RaiseOnStateMachineDone();
                     }
 
                     // stop the state machine execution

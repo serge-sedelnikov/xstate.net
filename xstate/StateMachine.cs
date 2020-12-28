@@ -25,18 +25,6 @@ namespace XStateNet
         public string InitialStateId { get => _initialStateId; }
 
         /// <summary>
-        /// Executes when state machien is exiting with success. To do so the state machien must have at least one final state.
-        /// </summary>
-        /// <value></value>
-        public Action DoneHandler { get; set; }
-
-        /// <summary>
-        /// Executes every time there is an error in state machine.
-        /// </summary>
-        /// <value></value>
-        public Action<Exception> ErrorHandler { get; set; }
-
-        /// <summary>
         /// Creates the state machine.
         /// </summary>
         /// <param name="id">ID of the state machine.</param>
