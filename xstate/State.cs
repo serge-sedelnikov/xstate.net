@@ -231,17 +231,25 @@ namespace XStateNet
                 {
                     Debug.WriteLine(error);
                     // provide the error to callback
-                    if (cancelSource != null && !cancelSource.IsCancellationRequested)
+                    if (!cancelSource.IsCancellationRequested)
                         callback(errorEventId, error);
                 }
             }, () =>
             {
-                // if this service execution was canceled by other service, mark it as canceled
-                if (cancelSource != null)
+                // if the service was canceled by another service switch, use it here
+                try
                 {
+                    // if this service execution was canceled by other service, mark it as canceled
                     cancelSource.Cancel();
                     cancelSource.Dispose();
-                    cancelSource = null;
+                }
+                catch (ObjectDisposedException error)
+                {
+                    // this error is expected if the cleanup method called twise, 
+                    // ignore it here, but throw on any other exception.
+                    // the coce can be called twise when another service exits and calls all cleanup code
+                    // and then self service exits and calls same clean up code.
+                    Debug.WriteLine(error);
                 }
             });
 
@@ -289,14 +297,23 @@ namespace XStateNet
                 cancelSource.Token.Register(() =>
                 {
                     interpreter.ForceStopStateMachine();
-                    cancelSource.Dispose();
-                    cancelSource = null;
                 });
             }, () =>
             {
                 // if the service was canceled by another service switch, use it here
-                if (cancelSource != null)
+                try
+                {
                     cancelSource.Cancel();
+                    cancelSource.Dispose();
+                }
+                catch (ObjectDisposedException error)
+                {
+                    // this error is expected if the cleanup method called twise, 
+                    // ignore it here, but throw on any other exception.
+                    // the coce can be called twise when another service exits and calls all cleanup code
+                    // and then self service exits and calls same clean up code.
+                    Debug.WriteLine(error);
+                }
             });
         }
 

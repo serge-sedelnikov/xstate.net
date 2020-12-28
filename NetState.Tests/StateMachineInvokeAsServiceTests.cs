@@ -70,9 +70,9 @@ namespace NetState.Tests
 
             // compose service state machine
             State childState1 = new State("childState1");
-            childState1.WithInvoke((callback) =>
+            childState1.WithInvoke(async (callback) =>
             {
-                Task.Delay(3000).GetAwaiter().GetResult();
+                await Task.Delay(3000);
                 childState1Called = true;
                 callback("DONE");
             })

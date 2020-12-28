@@ -121,7 +121,7 @@ namespace NetState.Tests
 
             var state1 = new State("My test");
             state1.WithTimeout(TimeSpan.FromSeconds(5), "My test 2")
-            .WithInvoke((callback) =>
+            .WithInvoke(async (callback) =>
             {
                 // start counting service
                 state1ServiceRunning = true;
@@ -129,7 +129,7 @@ namespace NetState.Tests
                 {
                     state1ServiceCount++;
                     // count every half a secm to get 10 times to check
-                    Task.Delay(500).GetAwaiter().GetResult();
+                    await Task.Delay(500);
                 }
                 // never call callback here to make sure service is canceled by delay service
             })
