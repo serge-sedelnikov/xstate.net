@@ -9,11 +9,12 @@ namespace NetState.Tests
     public class StateMachineInvokeAsServiceTests
     {
         [Fact]
-        public void ExecuteStateMachineAsService()
+        public async Task ExecuteStateMachineAsService()
         {
 
             bool childState1Called = false;
             bool childFinalStateCalled = false;
+            bool state2Called = false;
 
             // compose service state machine
             State childState1 = new State("childState1");
@@ -35,14 +36,26 @@ namespace NetState.Tests
             childState1, childFinalState);
 
 
-            // compose host state machine
+            // ==================compose host state machine==================
             State state1 = new State("state1");
             state1.WithInvoke(childMachine, "state2");
 
+            State state2 = new State("state2")
+            .AsFinalState()
+            .WithInvoke(async (cancel) => {
+                await Task.FromResult(0);
+                state2Called = true;
+            });
 
-            var machine = new StateMachine("machine1", "machine 1", "state1", state1);
+
+            var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2);
             var interpreter = new Interpreter(machine);
             interpreter.StartStateMachine();
+
+            await Task.Delay(1000);
+            Assert.True(childState1Called);
+            Assert.True(childFinalStateCalled);
+            Assert.True(state2Called);
         }
     }
 }

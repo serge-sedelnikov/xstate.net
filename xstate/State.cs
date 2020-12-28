@@ -276,6 +276,7 @@ namespace XStateNet
                 interpreter.OnStateMachineError += (sender, args) => {
                     callback(errorEventId, args.ExceptionObject as Exception);
                 };
+                interpreter.StartStateMachine();
 
                 cancelSource.Token.Register(() => {
                     interpreter.ForceStopStateMachine();
