@@ -208,14 +208,11 @@ namespace XStateNet
             }
 
             var doneEventId = Guid.NewGuid().ToString();
-            // mark error exit event as error so we can distinct those
-            // there is no way user will use callback with this event name in real life
             var errorEventId = Guid.NewGuid().ToString();
 
             var cancelSource = new CancellationTokenSource();
 
             // compose transitions
-            // if done state is not given, move to the same state
             this.WithTransition(doneEventId, onDoneTargetStateId);
 
             // compose transition to run on error case
@@ -261,24 +258,32 @@ namespace XStateNet
                 throw new ArgumentNullException(nameof(machine));
             }
 
-            CancellationTokenSource tokenSource = new CancellationTokenSource();
+            var doneEventId = Guid.NewGuid().ToString();
+            var errorEventId = Guid.NewGuid().ToString();
+            var cancelSource = new CancellationTokenSource();
+
+            // compose transitions
+            this.WithTransition(doneEventId, onDoneTargetStateId);
+
+            // compose transition to run on error case
+            this.WithTransition(errorEventId, onErrorTargetStateId);
 
             return this.WithInvoke((callback) => {
                 var interpreter = new Interpreter(machine);
                 interpreter.OnStateMachineDone += (sender, args) => {
-                    
+                    callback(doneEventId);
                 };
                 interpreter.OnStateMachineError += (sender, args) => {
-
+                    callback(errorEventId, args.ExceptionObject as Exception);
                 };
 
-                tokenSource.Token.Register(() => {
+                cancelSource.Token.Register(() => {
                     interpreter.ForceStopStateMachine();
-                    tokenSource.Dispose();
+                    cancelSource.Dispose();
                 });
             }, () => {
                 // if the service was canceled by another service switch, use it here
-                tokenSource.Cancel();
+                cancelSource.Cancel();
             });
         }
 
