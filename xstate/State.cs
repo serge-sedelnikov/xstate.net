@@ -224,20 +224,25 @@ namespace XStateNet
                 try
                 {
                     await asyncAction(cancelSource.Token);
-                    if(!cancelSource.IsCancellationRequested)
+                    if (!cancelSource.IsCancellationRequested)
                         callback(doneEventId);
                 }
                 catch (Exception error)
                 {
                     Debug.WriteLine(error);
                     // provide the error to callback
-                    if(!cancelSource.IsCancellationRequested)
+                    if (cancelSource != null && !cancelSource.IsCancellationRequested)
                         callback(errorEventId, error);
                 }
-            }, () => {
+            }, () =>
+            {
                 // if this service execution was canceled by other service, mark it as canceled
-                cancelSource.Cancel();
-                cancelSource.Dispose();
+                if (cancelSource != null)
+                {
+                    cancelSource.Cancel();
+                    cancelSource.Dispose();
+                    cancelSource = null;
+                }
             });
 
             // return current state to be able to chain up the services.
@@ -268,23 +273,30 @@ namespace XStateNet
             // compose transition to run on error case
             this.WithTransition(errorEventId, onErrorTargetStateId);
 
-            return this.WithInvoke((callback) => {
+            return this.WithInvoke((callback) =>
+            {
                 var interpreter = new Interpreter(machine);
-                interpreter.OnStateMachineDone += (sender, args) => {
+                interpreter.OnStateMachineDone += (sender, args) =>
+                {
                     callback(doneEventId);
                 };
-                interpreter.OnStateMachineError += (sender, args) => {
+                interpreter.OnStateMachineError += (sender, args) =>
+                {
                     callback(errorEventId, args.ExceptionObject as Exception);
                 };
                 interpreter.StartStateMachine();
 
-                cancelSource.Token.Register(() => {
+                cancelSource.Token.Register(() =>
+                {
                     interpreter.ForceStopStateMachine();
                     cancelSource.Dispose();
+                    cancelSource = null;
                 });
-            }, () => {
+            }, () =>
+            {
                 // if the service was canceled by another service switch, use it here
-                cancelSource.Cancel();
+                if (cancelSource != null)
+                    cancelSource.Cancel();
             });
         }
 
