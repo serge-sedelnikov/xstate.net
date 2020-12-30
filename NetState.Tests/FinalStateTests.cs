@@ -101,7 +101,7 @@ namespace NetState.Tests
             .WithInvoke(async (cancel) =>
             {
                 await Task.Delay(100);
-            });
+            }, null, null);
 
             var machine = new StateMachine("machine1", "machine1", "state1", state1);
 

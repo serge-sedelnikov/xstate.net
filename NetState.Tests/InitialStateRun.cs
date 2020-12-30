@@ -110,7 +110,6 @@ namespace NetState.Tests
         [Fact]
         public async Task OneInitialStateMultipleServicesExecuted()
         {
-            object lockObject = new object();
             int serviceExecuted = 0;
             int thread1 = 0;
             int thread2 = 0;
@@ -119,22 +118,18 @@ namespace NetState.Tests
             state.WithInvoke(async (callback) =>
             {
                 // executed in parallel
-                thread1 = Task.CurrentId.GetValueOrDefault();
-                lock (lockObject)
-                {
-                    serviceExecuted += 1;
-                }
-                await Task.FromResult(0);
+                thread1 = Thread.CurrentThread.ManagedThreadId;
+                Interlocked.Increment(ref serviceExecuted);
+                await Task.Delay(100);
+                await callback("DONE");
             })
             .WithInvoke(async (callback) =>
             {
                 // executed in parallel
-                thread2 = Task.CurrentId.GetValueOrDefault();
-                lock (lockObject)
-                {
-                    serviceExecuted += 1;
-                }
+                thread2 = Thread.CurrentThread.ManagedThreadId;
+                Interlocked.Increment(ref serviceExecuted);
                 await Task.FromResult(0);
+                await callback("DONE");
             });
 
             var stateMachine = new StateMachine("test", "test", "My test");
@@ -149,7 +144,8 @@ namespace NetState.Tests
             await Task.Delay(2000);
 
             Assert.Equal(2, serviceExecuted);
-            Assert.NotEqual(thread1, thread2);
+            // services are running in the same managed thread ID
+            Assert.Equal(thread1, thread2);
         }
 
         [Fact]

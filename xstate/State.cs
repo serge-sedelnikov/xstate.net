@@ -227,14 +227,13 @@ namespace XStateNet
                     if (!cancelSource.IsCancellationRequested)
                         await callback(doneEventId);
                 }
-                catch (AggregateException error)
+                catch (Exception error)
                 {
-                    var firstError = error.InnerException;
-                    Debug.WriteLine(firstError);
+                    Debug.WriteLine(error);
                     // provide the error to callback
                     if (!cancelSource.IsCancellationRequested)
                     {
-                        await callback(errorEventId, firstError);
+                        await callback(errorEventId, error);
                     }
                 }
             }, () =>
