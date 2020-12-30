@@ -97,7 +97,16 @@ namespace XStateNet
         /// Starts the state machine.
         /// </summary>
         /// <param name="machine">State machine to start.</param>
-        public async Task StartStateMachine()
+        public async void StartStateMachine()
+        {
+            await StartStateMachineAsync();
+        }
+
+        /// <summary>
+        /// Starts the state machine.
+        /// </summary>
+        /// <param name="machine">State machine to start.</param>
+        public async Task StartStateMachineAsync()
         {
             if (_cancelationTokenSource != null)
             {
@@ -157,7 +166,7 @@ namespace XStateNet
                     {
                         throw error;
                     }
-                    
+
                     // call state machine on done handler
                     RaiseOnStateMachineDone();
 

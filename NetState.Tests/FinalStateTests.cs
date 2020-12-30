@@ -38,7 +38,7 @@ namespace NetState.Tests
             };
 
             Interpreter interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             await Task.Delay(2000);
             isLoopRunning = true;
@@ -83,7 +83,7 @@ namespace NetState.Tests
                 state1, state2, errorState
             };
             var interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             await Task.Delay(3000);
 
@@ -117,7 +117,7 @@ namespace NetState.Tests
             {
                 currentStateId = args.State.Id;
             };
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             await Task.Delay(500);
             Assert.True(machineIsDone);
@@ -147,7 +147,7 @@ namespace NetState.Tests
                 currentStateId = args.State.Id;
             };
 
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             await Task.Delay(500);
             Assert.False(machineIsDone);
@@ -183,7 +183,7 @@ namespace NetState.Tests
                 {
                     currentStateId = args.State.Id;
                 };
-                await interpreter.StartStateMachine();
+                await interpreter.StartStateMachineAsync();
 
                 await Task.Delay(500);
             });

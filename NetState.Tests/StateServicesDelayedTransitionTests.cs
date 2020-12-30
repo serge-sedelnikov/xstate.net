@@ -32,7 +32,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             // wait for 6 sec to be sure
             await Task.Delay(TimeSpan.FromSeconds(6));
@@ -67,7 +67,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             // wait for 6 sec to be sure
             await Task.Delay(TimeSpan.FromSeconds(6));
@@ -102,7 +102,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             // wait for 4 sec
             await Task.Delay(TimeSpan.FromSeconds(4));
@@ -152,7 +152,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            interpreter.StartStateMachine(); // no need to await here as it may take some time
+            await interpreter.StartStateMachineAsync(); // no need to await here as it may take some time
 
             // wait for 6 sec
             await Task.Delay(TimeSpan.FromSeconds(6));
@@ -162,6 +162,7 @@ namespace NetState.Tests
             // check that parallel service was stopped
             Assert.False(state1ServiceRunning);
             // how many times loop was running before stopped
+            Debug.WriteLine(state1ServiceCount);
             Assert.True(state1ServiceCount >= 10);
         }
 
@@ -214,7 +215,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             // wait for 6 sec to be sure
             await Task.Delay(TimeSpan.FromSeconds(6));

@@ -25,7 +25,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             // TODO: wait until state machine is done
             await Task.Delay(2000);
@@ -56,7 +56,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             // TODO: wait until state machine is done
             await Task.Delay(2000);
@@ -81,7 +81,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             // TODO: wait until state machine is done
             await Task.Delay(2000);
@@ -102,7 +102,7 @@ namespace NetState.Tests
             };
 
                 var interpreter = new Interpreter(stateMachine);
-                await interpreter.StartStateMachine();
+                await interpreter.StartStateMachineAsync();
             });
         }
 
@@ -140,7 +140,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             // TODO: wait until state machine is done
             await Task.Delay(2000);
@@ -167,7 +167,7 @@ namespace NetState.Tests
                 };
 
                 var interpreter = new Interpreter(stateMachine);
-                await interpreter.StartStateMachine();
+                await interpreter.StartStateMachineAsync();
                 await Task.Delay(1000);
             });
         }
@@ -200,7 +200,7 @@ namespace NetState.Tests
                 prevStateId = args.PreviousState?.Id;
             };
 
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             await Task.Delay(1000);
 
@@ -237,7 +237,7 @@ namespace NetState.Tests
                 prevStateId = args.PreviousState?.Id;
             };
 
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             await Task.Delay(1000);
 

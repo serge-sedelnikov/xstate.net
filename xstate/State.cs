@@ -297,7 +297,7 @@ namespace XStateNet
                     interpreter.ForceStopStateMachine();
                 });
 
-                interpreter.StartStateMachine().Wait();                
+                interpreter.StartStateMachineAsync().Wait();                
             }, () =>
             {
                 // if the service was canceled by another service switch, use it here

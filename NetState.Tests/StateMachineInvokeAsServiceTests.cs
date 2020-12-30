@@ -50,7 +50,7 @@ namespace NetState.Tests
 
             var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2);
             var interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             await Task.Delay(1000);
             Assert.True(childState1Called);
@@ -108,7 +108,7 @@ namespace NetState.Tests
 
             var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2);
             var interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachine();
+            await interpreter.StartStateMachineAsync();
 
             await Task.Delay(4000);
             Assert.True(childState1Called);
@@ -162,7 +162,7 @@ namespace NetState.Tests
 
                 var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2);
                 var interpreter = new Interpreter(machine);
-                await interpreter.StartStateMachine();
+                await interpreter.StartStateMachineAsync();
 
                 await Task.Delay(1000);
             });
