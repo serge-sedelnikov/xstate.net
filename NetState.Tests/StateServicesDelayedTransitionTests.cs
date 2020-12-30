@@ -32,7 +32,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
             await Task.Delay(TimeSpan.FromSeconds(6));
@@ -67,7 +67,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
             await Task.Delay(TimeSpan.FromSeconds(6));
@@ -102,7 +102,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             // wait for 4 sec
             await Task.Delay(TimeSpan.FromSeconds(4));
@@ -152,7 +152,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             // wait for 6 sec
             await Task.Delay(TimeSpan.FromSeconds(6));
@@ -214,7 +214,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
             await Task.Delay(TimeSpan.FromSeconds(6));

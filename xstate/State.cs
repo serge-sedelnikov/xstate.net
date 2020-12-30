@@ -219,21 +219,22 @@ namespace XStateNet
             this.WithTransition(errorEventId, onErrorTargetStateId);
 
             // create the service with callback
-            this.WithInvoke(async (callback) =>
+            this.WithInvoke((callback) =>
             {
                 try
                 {
-                    await asyncAction(cancelSource.Token);
+                    asyncAction(cancelSource.Token).Wait();
                     if (!cancelSource.IsCancellationRequested)
                         callback(doneEventId);
                 }
-                catch (Exception error)
+                catch (AggregateException error)
                 {
-                    Debug.WriteLine(error);
+                    var firstError = error.InnerException;
+                    Debug.WriteLine(firstError);
                     // provide the error to callback
                     if (!cancelSource.IsCancellationRequested)
-                    {
-                        callback(errorEventId, error);
+                    {                       
+                        callback(errorEventId, firstError);
                     }
                 }
             }, () =>
@@ -283,18 +284,15 @@ namespace XStateNet
             // compose transition to run on error case
             this.WithTransition(errorEventId, onErrorTargetStateId);
 
-            return this.WithInvoke((callback) =>
+            return this.WithInvoke(async (callback) =>
             {
                 var interpreter = new Interpreter(machine);
                 interpreter.OnStateMachineDone += (sender, args) =>
                 {
                     callback(doneEventId);
                 };
-                interpreter.OnStateMachineError += (sender, args) =>
-                {
-                    callback(errorEventId, args.ExceptionObject as Exception);
-                };
-                interpreter.StartStateMachine();
+
+                await interpreter.StartStateMachine();
 
                 cancelSource.Token.Register(() =>
                 {

@@ -16,26 +16,29 @@ namespace NetState.Tests
             bool isAsyncTaskRunning = true;
 
             State state1 = new State("state1");
-            state1.WithInvoke((callback) => {
-                
+            state1.WithInvoke((callback) =>
+            {
+
                 // this should never exit until callback is called
-                Task.Run(async () => {
-                    while(!isLoopRunning)
+                Task.Run(async () =>
+                {
+                    while (!isLoopRunning)
                     {
                         await Task.Delay(500);
                     }
-                }).ContinueWith((t) => {
+                }).ContinueWith((t) =>
+                {
                     isAsyncTaskRunning = false;
                 });
             });
 
             StateMachine machine = new StateMachine("machine1", "machine 1", "state1");
-            machine.States = new [] {
+            machine.States = new[] {
                 state1
             };
 
             Interpreter interpreter = new Interpreter(machine);
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             await Task.Delay(2000);
             isLoopRunning = true;
@@ -52,32 +55,35 @@ namespace NetState.Tests
             bool errorStateTriggered = false;
 
             State state1 = new State("state1");
-            state1.WithInvoke(async (cancel) => {
+            state1.WithInvoke(async (cancel) =>
+            {
                 await Task.Delay(1000);
-                if(error)
+                if (error)
                 {
                     throw new Exception("Error in async service action");
                 }
             }, "state2", "errorState");
 
             State state2 = new State("state2");
-            state2.WithActionOnEnter(() => {
+            state2.WithActionOnEnter(() =>
+            {
                 state2Triggered = true;
                 errorStateTriggered = false;
             });
 
             State errorState = new State("errorState");
-            errorState.WithActionOnEnter(() => {
+            errorState.WithActionOnEnter(() =>
+            {
                 state2Triggered = false;
                 errorStateTriggered = true;
             });
 
             var machine = new StateMachine("machine1", "machine1", "state1");
-            machine.States = new []{
+            machine.States = new[]{
                 state1, state2, errorState
             };
             var interpreter = new Interpreter(machine);
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             await Task.Delay(3000);
 
@@ -93,22 +99,25 @@ namespace NetState.Tests
 
             State state1 = new State("state1");
             state1.AsFinalState()
-            .WithInvoke(async (cancel) => {
+            .WithInvoke(async (cancel) =>
+            {
                 await Task.Delay(100);
             });
 
             var machine = new StateMachine("machine1", "machine1", "state1", state1);
-            
+
             var interpreter = new Interpreter(machine);
             // subscribe for done handler.
-            interpreter.OnStateMachineDone += (sender, args) => {
+            interpreter.OnStateMachineDone += (sender, args) =>
+            {
                 machineIsDone = true;
             };
             // subscribe for state change events
-            interpreter.OnStateChanged += (sender, args) => {
+            interpreter.OnStateChanged += (sender, args) =>
+            {
                 currentStateId = args.State.Id;
             };
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             await Task.Delay(500);
             Assert.True(machineIsDone);
@@ -121,21 +130,24 @@ namespace NetState.Tests
             string currentStateId = "";
 
             State state1 = new State("state1");
-            state1.WithInvoke(async (cancel) => {
+            state1.WithInvoke(async (cancel) =>
+            {
                 await Task.Delay(100);
             });
 
             var machine = new StateMachine("machine1", "machine1", "state1", state1);
 
             var interpreter = new Interpreter(machine);
-            interpreter.OnStateMachineDone += (sender, args) => {
+            interpreter.OnStateMachineDone += (sender, args) =>
+            {
                 machineIsDone = true;
             };
-            interpreter.OnStateChanged += (sender, args) => {
+            interpreter.OnStateChanged += (sender, args) =>
+            {
                 currentStateId = args.State.Id;
             };
 
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             await Task.Delay(500);
             Assert.False(machineIsDone);
@@ -146,33 +158,37 @@ namespace NetState.Tests
         public async Task StateMachineOnErrorInFinalState_InitialState()
         {
             bool machineIsDone = false;
-            Exception error = null;
             string currentStateId = "";
 
-            State state1 = new State("state1");
-            state1.AsFinalState()
-            .WithInvoke(async (cancel) => {
-                await Task.Delay(100);
-                throw new Exception("Error in state execution.");
+            var error = await Assert.ThrowsAsync<Exception>(async () =>
+            {
+                State state1 = new State("state1");
+                state1.AsFinalState()
+                .WithInvoke(async (cancel) =>
+                {
+                    await Task.Delay(100);
+                    throw new Exception("Error in state execution.");
+                });
+
+                var machine = new StateMachine("machine1", "machine1", "state1", state1);
+
+                var interpreter = new Interpreter(machine);
+
+                interpreter.OnStateMachineDone += (sender, args) =>
+                {
+                    machineIsDone = true;
+                };
+
+                interpreter.OnStateChanged += (sender, args) =>
+                {
+                    currentStateId = args.State.Id;
+                };
+                await interpreter.StartStateMachine();
+
+                await Task.Delay(500);
             });
 
-            var machine = new StateMachine("machine1", "machine1", "state1", state1);
 
-            var interpreter = new Interpreter(machine);
-
-            interpreter.OnStateMachineDone += (sender, args) => {
-                machineIsDone = true;
-            };
-            interpreter.OnStateMachineError += (sender, args) => {
-                error = args.ExceptionObject as Exception;
-            };
-
-            interpreter.OnStateChanged += (sender, args) => {
-                currentStateId = args.State.Id;
-            };
-            interpreter.StartStateMachine();
-
-            await Task.Delay(500);
             Assert.False(machineIsDone);
             Assert.NotNull(error);
         }

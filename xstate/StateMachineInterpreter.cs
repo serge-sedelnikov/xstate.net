@@ -59,11 +59,6 @@ namespace XStateNet
         public event EventHandler OnStateMachineDone;
 
         /// <summary>
-        /// Executes every time when state machine throws error.
-        /// </summary>
-        public event UnhandledExceptionEventHandler OnStateMachineError;
-
-        /// <summary>
         /// State machine.
         /// </summary>
         private StateMachine _stateMachine;
@@ -99,20 +94,10 @@ namespace XStateNet
         }
 
         /// <summary>
-        /// Raises the state change event.
-        /// </summary>
-        /// <param name="error">Error to provide to the event.</param>
-        private void RaiseOnStateMachineError(Exception error)
-        {
-            UnhandledExceptionEventHandler handler = OnStateMachineError;
-            handler?.Invoke(this, new UnhandledExceptionEventArgs(error, false));
-        }
-
-        /// <summary>
         /// Starts the state machine.
         /// </summary>
         /// <param name="machine">State machine to start.</param>
-        public void StartStateMachine()
+        public async Task StartStateMachine()
         {
             if (_cancelationTokenSource != null)
             {
@@ -134,23 +119,21 @@ namespace XStateNet
             _cancelationTokenSource = new CancellationTokenSource();
 
             // start invoking the state asyncronously
-            Task.Run(() => Invoke(initialState));
+            await Invoke(initialState);
         }
 
         /// <summary>
         /// Invokes one state.
         /// </summary>
         /// <param name="state"></param>
-        private void Invoke(State state, State previousState = null)
+        private async Task Invoke(State state, State previousState = null)
         {
             // check if state machine was forced to stop
-            if(_cancelationTokenSource.IsCancellationRequested)
+            if (_cancelationTokenSource.IsCancellationRequested)
             {
                 // dispose token
                 _cancelationTokenSource.Dispose();
                 _cancelationTokenSource = null;
-                // notify that the state machine was exited
-                RaiseOnStateMachineError(new OperationCanceledException("The state machine execution was canceled by user."));
                 // force to exit
                 return;
             }
@@ -159,7 +142,7 @@ namespace XStateNet
             RaiseOnStateChangedEvent(state, previousState);
 
             // callback that affects the state change.
-            State.CallbackAction callback = (eventId, error) =>
+            State.CallbackAction callback = async (eventId, error) =>
             {
                 // execute on exit actions before moving to the next state
                 state.InvokeCleanupActions();
@@ -170,35 +153,22 @@ namespace XStateNet
                 // if this was the final state, check it and exit
                 if (state.Mode == StateMode.Final)
                 {
-                    // here we need to decide did we come here after error or successful execution
-                    // check if error is not null
-                    if (error != null)
-                    {
-                        // raise event that machine has error.
-                        RaiseOnStateMachineError(error);
-                    }
-                    else
-                    {
-                        // call state machine on done handler
-                        RaiseOnStateMachineDone();
-                    }
+                    // call state machine on done handler
+                    RaiseOnStateMachineDone();
 
                     // stop the state machine execution
                     return;
                 }
 
                 // check next state
-                var nextStateId = state.Transitions[eventId];
+                var nextStateId = state.Transitions.GetValueOrDefault(eventId);
                 if (string.IsNullOrEmpty(nextStateId))
                 {
                     // if there is no next state id, warn developer about it
                     Debug.WriteLine("Transition was called but can't find next state ID for it.", "Warning");
-                    // if we got error object but no state to transfer from error execution result,
-                    // raise error event to notify the user about it.
-                    if (error != null)
+                    if(error != null)
                     {
-                        // raise event that machine has error.
-                        RaiseOnStateMachineError(error);
+                        throw error;
                     }
                     return;
                 }
@@ -212,7 +182,7 @@ namespace XStateNet
                 }
 
                 // invoke next state, provising previous state for event raising
-                Invoke(nextState, state);
+                await Invoke(nextState, state);
             };
 
 
@@ -227,18 +197,20 @@ namespace XStateNet
             }
 
             // execute all services in parallel
-            state.ServiceDelegates.ForEach(d =>
+            var services = state.ServiceDelegates.Select(d =>
             {
                 // run the services on own threads
-                Task.Run(() => d(callback));
+                return Task.Run(() => d(callback));
             });
 
             // execute all activities in parallel
-            state.Activities.ForEach(d =>
+            var activities = state.Activities.Select(d =>
             {
                 // run the activities in own thread.
-                Task.Run(() => d());
+                return Task.Run(() => d());
             });
+
+            await Task.WhenAll(services.Union(activities).ToArray());
         }
 
         /// <summary>
