@@ -25,7 +25,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
             await Task.Delay(2000);
@@ -56,7 +56,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
             await Task.Delay(2000);
@@ -81,7 +81,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
             await Task.Delay(2000);
@@ -92,7 +92,7 @@ namespace NetState.Tests
         [Fact]
         public void NoInitialStateGiven()
         {
-            Assert.Throws<InvalidOperationException>(() =>
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
                 var state = new State("My test 1");
 
@@ -102,7 +102,7 @@ namespace NetState.Tests
             };
 
                 var interpreter = new Interpreter(stateMachine);
-                interpreter.StartStateMachine();
+                await interpreter.StartStateMachine();
             });
         }
 
@@ -140,7 +140,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
             await Task.Delay(2000);
@@ -150,9 +150,9 @@ namespace NetState.Tests
         }
 
         [Fact]
-        public void NoStateToTransitionExist()
+        public async Task NoStateToTransitionExist()
         {
-            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
                 var state = new State("My test");
                 state.WithTransition("DONE", "next state")
@@ -167,8 +167,7 @@ namespace NetState.Tests
                 };
 
                 var interpreter = new Interpreter(stateMachine);
-                interpreter.StartStateMachine();
-
+                await interpreter.StartStateMachine();
                 await Task.Delay(1000);
             });
         }
@@ -187,7 +186,7 @@ namespace NetState.Tests
 
             var stateMachine = new StateMachine("test", "test", "My test");
             stateMachine.States = new State[]{
-                    state1, 
+                    state1,
                     state2
                 };
 
@@ -195,12 +194,13 @@ namespace NetState.Tests
 
             var newStateId = "";
             var prevStateId = "";
-            interpreter.OnStateChanged += (sender, args) => {
+            interpreter.OnStateChanged += (sender, args) =>
+            {
                 newStateId = args.State.Id;
                 prevStateId = args.PreviousState?.Id;
             };
 
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             await Task.Delay(1000);
 
@@ -223,7 +223,7 @@ namespace NetState.Tests
 
             var stateMachine = new StateMachine("test", "test", "My test");
             stateMachine.States = new State[]{
-                    state1, 
+                    state1,
                     state2
                 };
 
@@ -231,12 +231,13 @@ namespace NetState.Tests
 
             var newStateId = "";
             var prevStateId = "";
-            interpreter.OnStateChanged += (sender, args) => {
+            interpreter.OnStateChanged += (sender, args) =>
+            {
                 newStateId = args.State.Id;
                 prevStateId = args.PreviousState?.Id;
             };
 
-            interpreter.StartStateMachine();
+            await interpreter.StartStateMachine();
 
             await Task.Delay(1000);
 
