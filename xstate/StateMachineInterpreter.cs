@@ -151,7 +151,7 @@ namespace XStateNet
             RaiseOnStateChangedEvent(state, previousState);
 
             // callback that affects the state change.
-            State.CallbackAction callback = (eventId, error) =>
+            State.CallbackAction callback = async (eventId, error) =>
             {
                 // execute on exit actions before moving to the next state
                 state.InvokeCleanupActions();
@@ -196,7 +196,7 @@ namespace XStateNet
                 }
 
                 // invoke next state, provising previous state for event raising
-                Invoke(nextState, state).Wait();
+                await Invoke(nextState, state);
             };
 
 
@@ -206,7 +206,7 @@ namespace XStateNet
             // if state is transient, invoke exit actions and return
             if (state.Mode == StateMode.Transient)
             {
-                callback("");
+                await callback("");
                 return;
             }
 
@@ -214,14 +214,14 @@ namespace XStateNet
             var services = state.ServiceDelegates.Select(d =>
             {
                 // run the services on own threads
-                return Task.Run(() => d(callback));
+                return d(callback);
             });
 
             // execute all activities in parallel
             var activities = state.Activities.Select(d =>
             {
                 // run the activities in own thread.
-                return Task.Run(() => d());
+                return d();
             });
 
             await Task.WhenAll(services.Union(activities).ToArray());

@@ -33,7 +33,7 @@ namespace NetState.Tests
             });
 
             // services with callback
-            state1.WithInvoke((callback) =>
+            state1.WithInvoke(async (callback) =>
             {
                 lock (lockObject)
                 {
@@ -44,7 +44,7 @@ namespace NetState.Tests
             {
                 cleanupCount++;
             })
-            .WithInvoke((callback) =>
+            .WithInvoke(async (callback) =>
             {
                 lock (lockObject)
                 {
@@ -120,12 +120,12 @@ namespace NetState.Tests
             bool done = false;
 
             State state1 = new State("state1");
-            state1.WithInvoke((callback) =>
+            state1.WithInvoke(async (callback) =>
             {
                 if (!failure)
                     callback("DONE");
             })
-            .WithInvoke((callback) =>
+            .WithInvoke(async (callback) =>
             {
                 if (failure)
                     callback("FAILED");
@@ -347,7 +347,7 @@ namespace NetState.Tests
             Exception error = await Assert.ThrowsAsync<FormatException>(async () =>
             {
                 State state1 = new State("state1")
-                .WithInvoke((callback) =>
+                .WithInvoke(async (callback) =>
                 {
                     int.Parse("error");
                     callback("DONE");
