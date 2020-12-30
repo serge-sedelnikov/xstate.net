@@ -197,10 +197,10 @@ namespace XStateNet
         /// Executes service action asyncronously and calls next state on action done, or on error.
         /// </summary>
         /// <param name="asyncAction">Action to execute in async way.</param>
-        /// <param name="onDoneTargetStateId">State to move to when action is done.</param>
-        /// <param name="onErrorTargetStateId">State to move on if action executed with error.</param>
+        /// <param name="onDoneTargetStateId">State to move to when action is done. If null, state is not switched to any other state.</param>
+        /// <param name="onErrorTargetStateId">State to move on if action executed with error. If null, exception will be thrown.</param>
         /// <returns></returns>
-        public State WithInvoke(AsyncCancelableAction asyncAction, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
+        public State WithInvoke(AsyncCancelableAction asyncAction, string onDoneTargetStateId, string onErrorTargetStateId)
         {
             if (asyncAction is null)
             {

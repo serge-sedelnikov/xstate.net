@@ -70,9 +70,10 @@ namespace NetState.Tests
             bool serviceExecuted = false;
 
             var state = new State("My test");
-            state.WithInvoke((callback) =>
+            state.WithInvoke(async (callback) =>
             {
                 serviceExecuted = true;
+                await Task.FromResult(0);
             });
 
             var stateMachine = new StateMachine("test", "test", "My test");
@@ -115,7 +116,7 @@ namespace NetState.Tests
             int thread2 = 0;
 
             var state = new State("My test");
-            state.WithInvoke((callback) =>
+            state.WithInvoke(async (callback) =>
             {
                 // executed in parallel
                 thread1 = Task.CurrentId.GetValueOrDefault();
@@ -123,8 +124,9 @@ namespace NetState.Tests
                 {
                     serviceExecuted += 1;
                 }
+                await Task.FromResult(0);
             })
-            .WithInvoke((callback) =>
+            .WithInvoke(async (callback) =>
             {
                 // executed in parallel
                 thread2 = Task.CurrentId.GetValueOrDefault();
@@ -132,6 +134,7 @@ namespace NetState.Tests
                 {
                     serviceExecuted += 1;
                 }
+                await Task.FromResult(0);
             });
 
             var stateMachine = new StateMachine("test", "test", "My test");
@@ -156,9 +159,9 @@ namespace NetState.Tests
             {
                 var state = new State("My test");
                 state.WithTransition("DONE", "next state")
-                .WithInvoke((callback) =>
+                .WithInvoke(async (callback) =>
                 {
-                    callback("DONE");
+                    await callback("DONE");
                 });
 
                 var stateMachine = new StateMachine("test", "test", "My test");
@@ -177,9 +180,9 @@ namespace NetState.Tests
         {
             var state1 = new State("My test");
             state1.WithTransition("DONE", "My test 2")
-            .WithInvoke((callback) =>
+            .WithInvoke(async (callback) =>
             {
-                callback("NOT_EXISTS_NOT_REGISTERED");
+                await callback("NOT_EXISTS_NOT_REGISTERED");
             });
 
             var state2 = new State("My test 2");
@@ -216,7 +219,7 @@ namespace NetState.Tests
             .WithInvoke(async (callback) =>
             {
                 await Task.Delay(100);
-                callback("DONE");
+                await callback("DONE");
             });
 
             var state2 = new State("My test 2");

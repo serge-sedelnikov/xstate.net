@@ -76,7 +76,7 @@ namespace demo_console_app
             }
         }
 
-        private static void PrintElapsedTime()
+        private static Task PrintElapsedTime()
         {
             _isPrintLoopRunning = true;
 
@@ -89,7 +89,7 @@ namespace demo_console_app
                 }
             });
 
-            Task.Run(runPrintLoop);
+            return Task.Run(runPrintLoop);
         }
 
         private static void StopPrintElapsedTime()

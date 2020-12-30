@@ -16,11 +16,10 @@ namespace NetState.Tests
             bool isAsyncTaskRunning = true;
 
             State state1 = new State("state1");
-            state1.WithInvoke((callback) =>
+            state1.WithInvoke(async (callback) =>
             {
-
                 // this should never exit until callback is called
-                Task.Run(async () =>
+                await Task.Run(async () =>
                 {
                     while (!isLoopRunning)
                     {

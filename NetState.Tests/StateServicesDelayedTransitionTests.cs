@@ -191,7 +191,7 @@ namespace NetState.Tests
                 await Task.Delay(2000);
                 if (!timeout)
                 {
-                    callback("SUCCESS_NO_TIMEOUT");
+                    await callback("SUCCESS_NO_TIMEOUT");
                 }
             });
 

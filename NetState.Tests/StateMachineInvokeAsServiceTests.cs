@@ -17,10 +17,10 @@ namespace NetState.Tests
 
             // compose service state machine
             State childState1 = new State("childState1");
-            childState1.WithInvoke((callback) =>
+            childState1.WithInvoke(async (callback) =>
             {
                 childState1Called = true;
-                callback("DONE");
+                await callback("DONE");
             })
             .WithTransition("DONE", "childFinalState");
 
@@ -74,7 +74,7 @@ namespace NetState.Tests
             {
                 await Task.Delay(3000);
                 childState1Called = true;
-                callback("DONE");
+                await callback("DONE");
             })
             .WithTransition("DONE", "childFinalState");
 
@@ -95,7 +95,7 @@ namespace NetState.Tests
             .WithInvoke(async (cancel) =>
             {
                 await Task.Delay(100);
-            }, "state2");
+            }, "state2", null);
 
             State state2 = new State("state2")
             .AsFinalState()
@@ -130,11 +130,11 @@ namespace NetState.Tests
             {
                 // compose service state machine
                 State childState1 = new State("childState1");
-                childState1.WithInvoke((callback) =>
+                childState1.WithInvoke(async (callback) =>
                 {
                     childState1Called = true;
                     int.Parse("error");
-                    callback("DONE");
+                    await callback("DONE");
                 })
                 .WithTransition("DONE", "childFinalState");
 
@@ -157,7 +157,7 @@ namespace NetState.Tests
                 {
                     await Task.FromResult(0);
                     state2Called = true;
-                });
+                }, null, null);
 
 
                 var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2);

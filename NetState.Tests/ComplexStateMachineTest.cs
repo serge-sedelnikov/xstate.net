@@ -39,7 +39,7 @@ namespace NetState.Tests
                 {
                     serviceCount++;
                 }
-                callback("DONE");
+                await callback("DONE");
             }, () =>
             {
                 cleanupCount++;
@@ -50,28 +50,31 @@ namespace NetState.Tests
                 {
                     serviceCount++;
                 }
+                await Task.FromResult(0);
             }, () =>
             {
                 cleanupCount++;
             });
 
             // activities
-            state1.WithActivity(() =>
+            state1.WithActivity(async () =>
             {
                 lock (lockObject)
                 {
                     activityCount++;
                 }
+                await Task.FromResult(0);
             }, () =>
             {
                 activityCleanupCount++;
             })
-            .WithActivity(() =>
+            .WithActivity(async () =>
             {
                 lock (lockObject)
                 {
                     activityCount++;
                 }
+                await Task.FromResult(0);
             }, () =>
             {
                 activityCleanupCount++;
@@ -123,12 +126,12 @@ namespace NetState.Tests
             state1.WithInvoke(async (callback) =>
             {
                 if (!failure)
-                    callback("DONE");
+                    await callback("DONE");
             })
             .WithInvoke(async (callback) =>
             {
                 if (failure)
-                    callback("FAILED");
+                    await callback("FAILED");
             })
             .WithTransition("DONE", "doneState")
             .WithTransition("FAILED", "failStated");
@@ -179,11 +182,11 @@ namespace NetState.Tests
                 // this should be checked, if cancel was requested, this is optional but valuable feature
                 if (!cancel.IsCancellationRequested)
                     state1Finalized = true;
-            }, "asyncStateTransition")
+            }, "asyncStateTransition", null)
             .WithInvoke(async (callback) =>
             {
                 await Task.Delay(500);
-                callback("NORMAL_CALLBACK_CALLED");
+                await callback("NORMAL_CALLBACK_CALLED");
             })
             .WithTransition("NORMAL_CALLBACK_CALLED", "normalStateTransition")
             .WithActionOnExit(() =>
@@ -232,11 +235,11 @@ namespace NetState.Tests
                 // this should be checked, if cancel was requested, this is optional but valuable feature
                 if (!cancel.IsCancellationRequested)
                     state1Finalized = true;
-            }, "asyncStateTransition")
+            }, "asyncStateTransition", null)
             .WithInvoke(async (cancel) =>
             {
                 await Task.Delay(500);
-            }, "normalStateTransition")
+            }, "normalStateTransition", null)
             .WithActionOnExit(() =>
             {
                 state1CleanedUp = true;
@@ -280,7 +283,7 @@ namespace NetState.Tests
                 {
                     await Task.Delay(100);
                     throw new Exception("Handled exception");
-                }, "state2");
+                }, "state2", null);
 
                 State state2 = new State("state2")
                 .WithActionOnEnter(() =>
@@ -350,7 +353,7 @@ namespace NetState.Tests
                 .WithInvoke(async (callback) =>
                 {
                     int.Parse("error");
-                    callback("DONE");
+                    await callback("DONE");
                 })
                 .WithTransition("DONE", "state2");
 

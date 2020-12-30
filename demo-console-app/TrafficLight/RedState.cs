@@ -30,7 +30,7 @@ namespace demo_console_app.TrafficLight
         private async Task WaitForRedLightTimer(CallbackAction callback)
         {
             await Task.Delay(5000);
-            callback("RED_LIGHT_DONE");
+            await callback("RED_LIGHT_DONE");
         }
     }
 }
