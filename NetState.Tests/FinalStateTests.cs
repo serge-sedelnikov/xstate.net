@@ -132,7 +132,7 @@ namespace NetState.Tests
             state1.WithInvoke(async (cancel) =>
             {
                 await Task.Delay(100);
-            });
+            }, null, null);
 
             var machine = new StateMachine("machine1", "machine1", "state1", state1);
 
@@ -167,7 +167,7 @@ namespace NetState.Tests
                 {
                     await Task.Delay(100);
                     throw new Exception("Error in state execution.");
-                });
+                }, null, null);
 
                 var machine = new StateMachine("machine1", "machine1", "state1", state1);
 

@@ -263,10 +263,10 @@ namespace XStateNet
         /// Executes the given state machine, then on machine done, moved to the onDoneTargetStateId, or in case of error, to onErrorTargetStateId.
         /// </summary>
         /// <param name="machine">State machine to execute. The machine must have a final state to be able to exit.</param>
-        /// <param name="onDoneTargetStateId">State to move to when action is done.</param>
-        /// <param name="onErrorTargetStateId">State to move on if action executed with error.</param>
+        /// <param name="onDoneTargetStateId">State to move to when action is done. If null, state is not switched to any other state.</param>
+        /// <param name="onErrorTargetStateId">State to move on if action executed with error. If null, exception will be thrown.</param>
         /// <returns></returns>
-        public State WithInvoke(StateMachine machine, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
+        public State WithInvoke(StateMachine machine, string onDoneTargetStateId, string onErrorTargetStateId)
         {
             if (machine is null)
             {
@@ -286,9 +286,9 @@ namespace XStateNet
             return this.WithInvoke(async (callback) =>
             {
                 var interpreter = new Interpreter(machine);
-                interpreter.OnStateMachineDone += (sender, args) =>
+                interpreter.OnStateMachineDone += async (sender, args) =>
                 {
-                    callback(doneEventId);
+                    await callback(doneEventId);
                 };
 
                 cancelSource.Token.Register(() =>

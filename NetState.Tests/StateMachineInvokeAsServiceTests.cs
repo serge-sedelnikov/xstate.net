@@ -28,16 +28,16 @@ namespace NetState.Tests
             .AsFinalState()
             .WithInvoke(async (cancel) =>
             {
-                await Task.FromResult(0);
+                await Task.Delay(100);
                 childFinalStateCalled = true;
-            });
+            }, null, null);
             var childMachine = new StateMachine("childMachine", "childMachine", childState1.Id,
             childState1, childFinalState);
 
 
             // ==================compose host state machine==================
             State state1 = new State("state1");
-            state1.WithInvoke(childMachine, "state2");
+            state1.WithInvoke(childMachine, "state2", null);
 
             State state2 = new State("state2")
             .AsFinalState()
@@ -45,7 +45,7 @@ namespace NetState.Tests
             {
                 await Task.FromResult(0);
                 state2Called = true;
-            });
+            }, null, null);
 
 
             var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2);
@@ -84,14 +84,14 @@ namespace NetState.Tests
             {
                 await Task.Delay(3000);
                 childFinalStateCalled = true;
-            });
+            }, null, null);
             var childMachine = new StateMachine("childMachine", "childMachine", childState1.Id,
             childState1, childFinalState);
 
 
             // ==================compose host state machine==================
             State state1 = new State("state1");
-            state1.WithInvoke(childMachine, "state2")
+            state1.WithInvoke(childMachine, "state2", null)
             .WithInvoke(async (cancel) =>
             {
                 await Task.Delay(100);
@@ -103,7 +103,7 @@ namespace NetState.Tests
             {
                 await Task.FromResult(0);
                 state2Called = true;
-            });
+            }, null, null);
 
 
             var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2);
@@ -144,12 +144,12 @@ namespace NetState.Tests
                 {
                     await Task.FromResult(0);
                     childFinalStateCalled = true;
-                });
+                }, null, null);
                 var childMachine = new StateMachine("childMachine", "childMachine", childState1.Id,
                 childState1, childFinalState);
 
                 State state1 = new State("state1");
-                state1.WithInvoke(childMachine, "state2");
+                state1.WithInvoke(childMachine, "state2", null);
 
                 State state2 = new State("state2")
                 .AsFinalState()
