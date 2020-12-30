@@ -163,7 +163,7 @@ namespace NetState.Tests
             Assert.False(state1ServiceRunning);
             // how many times loop was running before stopped
             Console.WriteLine(state1ServiceCount);
-            Assert.True(state1ServiceCount >= 1);
+            Assert.True(state1ServiceCount >= 4);
 
             // check that stopwatch timer shows about 5 sec
             Assert.InRange(stopwatch.ElapsedMilliseconds,
