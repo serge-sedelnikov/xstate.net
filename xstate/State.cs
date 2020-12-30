@@ -284,7 +284,7 @@ namespace XStateNet
             // compose transition to run on error case
             this.WithTransition(errorEventId, onErrorTargetStateId);
 
-            return this.WithInvoke(async (callback) =>
+            return this.WithInvoke((callback) =>
             {
                 var interpreter = new Interpreter(machine);
                 interpreter.OnStateMachineDone += (sender, args) =>
@@ -292,12 +292,12 @@ namespace XStateNet
                     callback(doneEventId);
                 };
 
-                await interpreter.StartStateMachine();
-
                 cancelSource.Token.Register(() =>
                 {
                     interpreter.ForceStopStateMachine();
                 });
+
+                interpreter.StartStateMachine().Wait();                
             }, () =>
             {
                 // if the service was canceled by another service switch, use it here

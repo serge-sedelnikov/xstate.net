@@ -160,7 +160,7 @@ namespace NetState.Tests
             bool machineIsDone = false;
             string currentStateId = "";
 
-            var error = await Assert.ThrowsAsync<Exception>(async () =>
+            var error = await Assert.ThrowsAnyAsync<Exception>(async () =>
             {
                 State state1 = new State("state1");
                 state1.AsFinalState()

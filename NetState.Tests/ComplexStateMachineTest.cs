@@ -273,7 +273,7 @@ namespace NetState.Tests
             bool errorWasNoticed = false;
             bool state2WasCalled = false;
 
-            var error = await Assert.ThrowsAsync<FormatException>(async () =>
+            var error = await Assert.ThrowsAnyAsync<Exception>(async () =>
             {
                 State state1 = new State("state1")
                 .WithInvoke(async (cancel) =>

@@ -142,7 +142,7 @@ namespace XStateNet
             RaiseOnStateChangedEvent(state, previousState);
 
             // callback that affects the state change.
-            State.CallbackAction callback = async (eventId, error) =>
+            State.CallbackAction callback = (eventId, error) =>
             {
                 // execute on exit actions before moving to the next state
                 state.InvokeCleanupActions();
@@ -153,6 +153,11 @@ namespace XStateNet
                 // if this was the final state, check it and exit
                 if (state.Mode == StateMode.Final)
                 {
+                    if (error != null)
+                    {
+                        throw error;
+                    }
+                    
                     // call state machine on done handler
                     RaiseOnStateMachineDone();
 
@@ -166,7 +171,7 @@ namespace XStateNet
                 {
                     // if there is no next state id, warn developer about it
                     Debug.WriteLine("Transition was called but can't find next state ID for it.", "Warning");
-                    if(error != null)
+                    if (error != null)
                     {
                         throw error;
                     }
@@ -182,7 +187,7 @@ namespace XStateNet
                 }
 
                 // invoke next state, provising previous state for event raising
-                await Invoke(nextState, state);
+                Invoke(nextState, state).Wait();
             };
 
 

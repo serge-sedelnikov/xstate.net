@@ -150,9 +150,9 @@ namespace NetState.Tests
         }
 
         [Fact]
-        public void NoStateToTransitionExist()
+        public async Task NoStateToTransitionExist()
         {
-            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
                 var state = new State("My test");
                 state.WithTransition("DONE", "next state")
@@ -168,7 +168,6 @@ namespace NetState.Tests
 
                 var interpreter = new Interpreter(stateMachine);
                 await interpreter.StartStateMachine();
-
                 await Task.Delay(1000);
             });
         }
@@ -187,7 +186,7 @@ namespace NetState.Tests
 
             var stateMachine = new StateMachine("test", "test", "My test");
             stateMachine.States = new State[]{
-                    state1, 
+                    state1,
                     state2
                 };
 
@@ -195,7 +194,8 @@ namespace NetState.Tests
 
             var newStateId = "";
             var prevStateId = "";
-            interpreter.OnStateChanged += (sender, args) => {
+            interpreter.OnStateChanged += (sender, args) =>
+            {
                 newStateId = args.State.Id;
                 prevStateId = args.PreviousState?.Id;
             };
@@ -223,7 +223,7 @@ namespace NetState.Tests
 
             var stateMachine = new StateMachine("test", "test", "My test");
             stateMachine.States = new State[]{
-                    state1, 
+                    state1,
                     state2
                 };
 
@@ -231,7 +231,8 @@ namespace NetState.Tests
 
             var newStateId = "";
             var prevStateId = "";
-            interpreter.OnStateChanged += (sender, args) => {
+            interpreter.OnStateChanged += (sender, args) =>
+            {
                 newStateId = args.State.Id;
                 prevStateId = args.PreviousState?.Id;
             };
