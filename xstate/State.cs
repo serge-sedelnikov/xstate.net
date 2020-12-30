@@ -357,13 +357,13 @@ namespace XStateNet
 
             // create service and transition to go to after time delay
             return WithTransition(eventId, targetStateId)
-            .WithInvoke(async (callback) =>
+            .WithInvoke((callback) =>
             {
                 // wait for delay
                 // pass token if this timeout is canceled by another service invokation
                 // NOTE!: if delay got canceled, the exception is thrown,
                 // hence we use .ContinueWith(...) to rid off unnecessary exception here.
-                await Task.Delay(delay, tokenSource.Token).ContinueWith(t => { });
+                Task.Delay(delay, tokenSource.Token).ContinueWith(t => { }).Wait();
 
                 // transition to another state only if token was not canceled
                 if (!tokenSource.IsCancellationRequested)

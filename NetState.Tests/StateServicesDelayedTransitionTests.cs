@@ -108,6 +108,7 @@ namespace NetState.Tests
             await Task.Delay(TimeSpan.FromSeconds(4));
             Assert.False(state2Triggered);
             Assert.True(stopwatch.IsRunning);
+            
         }
 
         [Fact]
@@ -163,6 +164,11 @@ namespace NetState.Tests
             // how many times loop was running before stopped
             Console.WriteLine(state1ServiceCount);
             Assert.True(state1ServiceCount >= 9);
+
+            // check that stopwatch timer shows about 5 sec
+            Assert.InRange(stopwatch.ElapsedMilliseconds,
+            TimeSpan.FromSeconds(4.9).TotalMilliseconds,
+            TimeSpan.FromSeconds(5.1).TotalMilliseconds);
         }
 
         [Theory]
