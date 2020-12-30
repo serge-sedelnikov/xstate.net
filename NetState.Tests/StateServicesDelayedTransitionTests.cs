@@ -121,14 +121,14 @@ namespace NetState.Tests
             bool state2Triggered = false;
 
             var state1 = new State("My test");
-            state1.WithTimeout(TimeSpan.FromSeconds(5), "My test 2")
+            state1.WithTimeout(2000, "My test 2")
             .WithInvoke(async (callback) =>
             {
                 // start counting service
                 state1ServiceRunning = true;
                 while (state1ServiceRunning)
                 {
-                    Interlocked.Increment(ref state1ServiceCount);
+                    state1ServiceCount = Interlocked.Increment(ref state1ServiceCount);
                     // count every half a sec to get 10 times to check
                     await Task.Delay(500);
                 }
@@ -152,7 +152,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachineAsync(); // no need to await here as it may take some time
+            interpreter.StartStateMachine(); // no need to await here as it may take some time
 
             // wait for 6 sec
             await Task.Delay(TimeSpan.FromSeconds(6));
@@ -163,12 +163,12 @@ namespace NetState.Tests
             Assert.False(state1ServiceRunning);
             // how many times loop was running before stopped
             Console.WriteLine(state1ServiceCount);
-            Assert.True(state1ServiceCount >= 9);
+            Assert.True(state1ServiceCount >= 4);
 
             // check that stopwatch timer shows about 5 sec
             Assert.InRange(stopwatch.ElapsedMilliseconds,
-            TimeSpan.FromSeconds(4.9).TotalMilliseconds,
-            TimeSpan.FromSeconds(5.1).TotalMilliseconds);
+            TimeSpan.FromSeconds(1.9).TotalMilliseconds,
+            TimeSpan.FromSeconds(2.1).TotalMilliseconds);
         }
 
         [Theory]
