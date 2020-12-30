@@ -266,5 +266,74 @@ namespace NetState.Tests
             Assert.True(normalStateTransitionHappened);
             Assert.False(asyncStateTransitionHappened);
         }
+
+        [Fact]
+        public async Task OnErrorEventFiredOnAnyError()
+        {
+            bool errorWasNoticed = false;
+            bool state2WasCalled = false;
+
+            State state1 = new State("state1")
+            .WithInvoke(async (callback) => {
+                await Task.Delay(100);
+                throw new Exception("Handled exception");
+            }, "state2");
+
+            State state2 = new State("state2")
+            .WithActionOnEnter(() => {
+                state2WasCalled = true;
+            })
+            .AsFinalState();
+
+            var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2);
+            var interpreter = new Interpreter(machine);
+            interpreter.OnStateMachineError += (sender, args) => {
+                errorWasNoticed = true;
+            };
+            interpreter.StartStateMachine();
+            await Task.Delay(500);
+
+            Assert.True(errorWasNoticed);
+            Assert.False(state2WasCalled, "state 2 was called, but it should not");
+        }
+
+        [Fact]
+        public async Task OnErrorEventNotFiredOnAnyErrorInCaseOfErrorTransitionGiven()
+        {
+            bool errorWasNoticed = false;
+            bool state2WasCalled = false;
+            bool state3WasCalled = false;
+
+            State state1 = new State("state1")
+            .WithInvoke(async (callback) => {
+                await Task.Delay(100);
+                throw new Exception("Handled exception");
+            }, "state2", "state3");
+
+            State state2 = new State("state2")
+            .WithActionOnEnter(() => {
+                state2WasCalled = true;
+            })
+            .AsFinalState();
+
+            State state3 = new State("state3")
+            .WithActionOnEnter(() => {
+                state3WasCalled = true;
+            })
+            .AsFinalState();
+
+            var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2, state3);
+            var interpreter = new Interpreter(machine);
+            interpreter.OnStateMachineError += (sender, args) => {
+                errorWasNoticed = true;
+            };
+            interpreter.StartStateMachine();
+            await Task.Delay(500);
+
+            // as we are having on error transition in state service, next line will not be set to true
+            Assert.False(errorWasNoticed);
+            Assert.False(state2WasCalled, "state 2 was called, but it should not");
+            Assert.True(state3WasCalled, "state 3 was not called but it should");
+        }
     }
 }

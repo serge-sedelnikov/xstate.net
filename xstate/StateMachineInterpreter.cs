@@ -193,6 +193,13 @@ namespace XStateNet
                 {
                     // if there is no next state id, warn developer about it
                     Debug.WriteLine("Transition was called but can't find next state ID for it.", "Warning");
+                    // if we got error object but no state to transfer from error execution result,
+                    // raise error event to notify the user about it.
+                    if (error != null)
+                    {
+                        // raise event that machine has error.
+                        RaiseOnStateMachineError(error);
+                    }
                     return;
                 }
 

@@ -232,7 +232,9 @@ namespace XStateNet
                     Debug.WriteLine(error);
                     // provide the error to callback
                     if (!cancelSource.IsCancellationRequested)
+                    {
                         callback(errorEventId, error);
+                    }
                 }
             }, () =>
             {
