@@ -152,7 +152,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachine();
+            interpreter.StartStateMachine(); // no need to await here as it may take some time
 
             // wait for 6 sec
             await Task.Delay(TimeSpan.FromSeconds(6));
