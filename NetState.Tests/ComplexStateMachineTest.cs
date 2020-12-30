@@ -98,7 +98,7 @@ namespace NetState.Tests
             };
 
             Interpreter interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachineAsync();
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is DONE
             await Task.Delay(1000);
@@ -154,7 +154,7 @@ namespace NetState.Tests
             };
 
             Interpreter interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachineAsync();
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
             await Task.Delay(1000);
@@ -207,7 +207,7 @@ namespace NetState.Tests
 
             var machine = new StateMachine("machine1", "machine2", "state1", state1, state2, state3);
             var interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachineAsync();
+            interpreter.StartStateMachine();
 
             await Task.Delay(3000);
             Assert.False(state1Finalized);
@@ -258,7 +258,7 @@ namespace NetState.Tests
 
             var machine = new StateMachine("machine1", "machine2", "state1", state1, state2, state3);
             var interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachineAsync();
+            interpreter.StartStateMachine();
 
             await Task.Delay(3000);
             Assert.False(state1Finalized);
@@ -330,7 +330,7 @@ namespace NetState.Tests
 
             var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2, state3);
             var interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachineAsync();
+            interpreter.StartStateMachine();
             await Task.Delay(500);
 
             // as we are having on error transition in state service, next line will not be set to true

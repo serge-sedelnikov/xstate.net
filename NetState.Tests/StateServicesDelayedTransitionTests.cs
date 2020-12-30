@@ -32,7 +32,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachineAsync();
+            interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
             await Task.Delay(TimeSpan.FromSeconds(6));
@@ -67,7 +67,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachineAsync();
+            interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
             await Task.Delay(TimeSpan.FromSeconds(6));
@@ -102,7 +102,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachineAsync();
+            interpreter.StartStateMachine();
 
             // wait for 4 sec
             await Task.Delay(TimeSpan.FromSeconds(4));
@@ -128,7 +128,7 @@ namespace NetState.Tests
                 state1ServiceRunning = true;
                 while (state1ServiceRunning)
                 {
-                    state1ServiceCount = Interlocked.Increment(ref state1ServiceCount);
+                    Interlocked.Increment(ref state1ServiceCount);
                     // count every half a sec to get 10 times to check
                     await Task.Delay(500);
                 }
@@ -163,7 +163,7 @@ namespace NetState.Tests
             Assert.False(state1ServiceRunning);
             // how many times loop was running before stopped
             Console.WriteLine(state1ServiceCount);
-            Assert.True(state1ServiceCount >= 4);
+            Assert.True(state1ServiceCount >= 1);
 
             // check that stopwatch timer shows about 5 sec
             Assert.InRange(stopwatch.ElapsedMilliseconds,
@@ -220,7 +220,7 @@ namespace NetState.Tests
             };
 
             var interpreter = new Interpreter(stateMachine);
-            await interpreter.StartStateMachineAsync();
+            interpreter.StartStateMachine();
 
             // wait for 6 sec to be sure
             await Task.Delay(TimeSpan.FromSeconds(6));
