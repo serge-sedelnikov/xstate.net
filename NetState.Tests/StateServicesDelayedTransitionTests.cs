@@ -127,7 +127,7 @@ namespace NetState.Tests
                 state1ServiceRunning = true;
                 while (state1ServiceRunning)
                 {
-                    state1ServiceCount++;
+                    Interlocked.Increment(ref state1ServiceCount);
                     // count every half a sec to get 10 times to check
                     await Task.Delay(500);
                 }
@@ -162,7 +162,7 @@ namespace NetState.Tests
             Assert.False(state1ServiceRunning);
             // how many times loop was running before stopped
             Console.WriteLine(state1ServiceCount);
-            Assert.True(state1ServiceCount >= 1);
+            Assert.True(state1ServiceCount >= 9);
         }
 
         [Theory]
