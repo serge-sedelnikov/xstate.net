@@ -16,11 +16,10 @@ namespace NetState.Tests
             bool isAsyncTaskRunning = true;
 
             State state1 = new State("state1");
-            state1.WithInvoke((callback) =>
+            state1.WithInvoke(async (callback) =>
             {
-
                 // this should never exit until callback is called
-                Task.Run(async () =>
+                await Task.Run(async () =>
                 {
                     while (!isLoopRunning)
                     {
@@ -38,7 +37,7 @@ namespace NetState.Tests
             };
 
             Interpreter interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachine();
+            interpreter.StartStateMachine();
 
             await Task.Delay(2000);
             isLoopRunning = true;
@@ -83,7 +82,7 @@ namespace NetState.Tests
                 state1, state2, errorState
             };
             var interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachine();
+            interpreter.StartStateMachine();
 
             await Task.Delay(3000);
 
@@ -102,7 +101,7 @@ namespace NetState.Tests
             .WithInvoke(async (cancel) =>
             {
                 await Task.Delay(100);
-            });
+            }, null, null);
 
             var machine = new StateMachine("machine1", "machine1", "state1", state1);
 
@@ -117,7 +116,7 @@ namespace NetState.Tests
             {
                 currentStateId = args.State.Id;
             };
-            await interpreter.StartStateMachine();
+            interpreter.StartStateMachine();
 
             await Task.Delay(500);
             Assert.True(machineIsDone);
@@ -133,7 +132,7 @@ namespace NetState.Tests
             state1.WithInvoke(async (cancel) =>
             {
                 await Task.Delay(100);
-            });
+            }, null, null);
 
             var machine = new StateMachine("machine1", "machine1", "state1", state1);
 
@@ -147,7 +146,7 @@ namespace NetState.Tests
                 currentStateId = args.State.Id;
             };
 
-            await interpreter.StartStateMachine();
+            interpreter.StartStateMachine();
 
             await Task.Delay(500);
             Assert.False(machineIsDone);
@@ -168,7 +167,7 @@ namespace NetState.Tests
                 {
                     await Task.Delay(100);
                     throw new Exception("Error in state execution.");
-                });
+                }, null, null);
 
                 var machine = new StateMachine("machine1", "machine1", "state1", state1);
 
@@ -183,7 +182,7 @@ namespace NetState.Tests
                 {
                     currentStateId = args.State.Id;
                 };
-                await interpreter.StartStateMachine();
+                await interpreter.StartStateMachineAsync();
 
                 await Task.Delay(500);
             });

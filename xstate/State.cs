@@ -48,7 +48,7 @@ namespace XStateNet
         /// <summary>
         /// Internal list of activities to run in parallel to services.
         /// </summary>
-        private List<Action> _activities;
+        private List<Func<Task>> _activities;
 
         /// <summary>
         /// Actions invoked on state enter before all services has started. Services are not executed until all enter actions are finalized.
@@ -99,14 +99,14 @@ namespace XStateNet
         /// List of activities to execute.
         /// </summary>
         /// <value></value>
-        public List<Action> Activities { get => _activities; }
+        public List<Func<Task>> Activities { get => _activities; }
 
         /// <summary>
         /// The delegate to call to notify state machine that certain event had happened. With optional error.
         /// </summary>
         /// <param name="eventId">ID of the event to call.</param>
         /// <param name="error">Optional error if happened during the execution.</param>
-        public delegate void CallbackAction(string eventId, Exception error = null);
+        public delegate Task CallbackAction(string eventId, Exception error = null);
 
         /// <summary>
         /// The service action to be executed on async service with optional cancellation token.
@@ -119,7 +119,7 @@ namespace XStateNet
         /// Service invocation delegate.
         /// </summary>
         /// <param name="callback">Callback to notify the state machine state is transitioning.</param>
-        public delegate void InvokeServiceAsyncDelegate(CallbackAction callback);
+        public delegate Task InvokeServiceAsyncDelegate(CallbackAction callback);
 
         /// <summary>
         /// The mode of the state, represents the state is either normal, final or transient.
@@ -136,7 +136,7 @@ namespace XStateNet
             this._id = id;
             _serviceDelegates = new List<InvokeServiceAsyncDelegate>();
             _transitions = new Dictionary<string, string>();
-            _activities = new List<Action>();
+            _activities = new List<Func<Task>>();
             _mode = StateMode.Normal;
         }
 
@@ -197,10 +197,10 @@ namespace XStateNet
         /// Executes service action asyncronously and calls next state on action done, or on error.
         /// </summary>
         /// <param name="asyncAction">Action to execute in async way.</param>
-        /// <param name="onDoneTargetStateId">State to move to when action is done.</param>
-        /// <param name="onErrorTargetStateId">State to move on if action executed with error.</param>
+        /// <param name="onDoneTargetStateId">State to move to when action is done. If null, state is not switched to any other state.</param>
+        /// <param name="onErrorTargetStateId">State to move on if action executed with error. If null, exception will be thrown.</param>
         /// <returns></returns>
-        public State WithInvoke(AsyncCancelableAction asyncAction, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
+        public State WithInvoke(AsyncCancelableAction asyncAction, string onDoneTargetStateId, string onErrorTargetStateId)
         {
             if (asyncAction is null)
             {
@@ -219,22 +219,21 @@ namespace XStateNet
             this.WithTransition(errorEventId, onErrorTargetStateId);
 
             // create the service with callback
-            this.WithInvoke((callback) =>
+            this.WithInvoke(async (callback) =>
             {
                 try
                 {
-                    asyncAction(cancelSource.Token).Wait();
+                    await asyncAction(cancelSource.Token);
                     if (!cancelSource.IsCancellationRequested)
-                        callback(doneEventId);
+                        await callback(doneEventId);
                 }
-                catch (AggregateException error)
+                catch (Exception error)
                 {
-                    var firstError = error.InnerException;
-                    Debug.WriteLine(firstError);
+                    Debug.WriteLine(error);
                     // provide the error to callback
                     if (!cancelSource.IsCancellationRequested)
-                    {                       
-                        callback(errorEventId, firstError);
+                    {
+                        await callback(errorEventId, error);
                     }
                 }
             }, () =>
@@ -264,10 +263,10 @@ namespace XStateNet
         /// Executes the given state machine, then on machine done, moved to the onDoneTargetStateId, or in case of error, to onErrorTargetStateId.
         /// </summary>
         /// <param name="machine">State machine to execute. The machine must have a final state to be able to exit.</param>
-        /// <param name="onDoneTargetStateId">State to move to when action is done.</param>
-        /// <param name="onErrorTargetStateId">State to move on if action executed with error.</param>
+        /// <param name="onDoneTargetStateId">State to move to when action is done. If null, state is not switched to any other state.</param>
+        /// <param name="onErrorTargetStateId">State to move on if action executed with error. If null, exception will be thrown.</param>
         /// <returns></returns>
-        public State WithInvoke(StateMachine machine, string onDoneTargetStateId = null, string onErrorTargetStateId = null)
+        public State WithInvoke(StateMachine machine, string onDoneTargetStateId, string onErrorTargetStateId)
         {
             if (machine is null)
             {
@@ -284,12 +283,12 @@ namespace XStateNet
             // compose transition to run on error case
             this.WithTransition(errorEventId, onErrorTargetStateId);
 
-            return this.WithInvoke((callback) =>
+            return this.WithInvoke(async (callback) =>
             {
                 var interpreter = new Interpreter(machine);
-                interpreter.OnStateMachineDone += (sender, args) =>
+                interpreter.OnStateMachineDone += async (sender, args) =>
                 {
-                    callback(doneEventId);
+                    await callback(doneEventId);
                 };
 
                 cancelSource.Token.Register(() =>
@@ -297,7 +296,7 @@ namespace XStateNet
                     interpreter.ForceStopStateMachine();
                 });
 
-                interpreter.StartStateMachine().Wait();                
+                await interpreter.StartStateMachineAsync();
             }, () =>
             {
                 // if the service was canceled by another service switch, use it here
@@ -367,12 +366,22 @@ namespace XStateNet
 
                 // transition to another state only if token was not canceled
                 if (!tokenSource.IsCancellationRequested)
-                    callback(eventId);
+                    await callback(eventId);
             }, () =>
             {
-                // if the state is exiting because of another service invoking callback,
-                // need to stop this timeout awaiting and exit too
-                tokenSource.Cancel();
+                try
+                {
+                    // if the state is exiting because of another service invoking callback,
+                    // need to stop this timeout awaiting and exit too
+                    tokenSource.Cancel();
+                    tokenSource.Dispose();
+                }
+                catch (ObjectDisposedException error)
+                {
+                    // if this method called twise, we need to track if
+                    // token was already disposed
+                    Debug.WriteLine(error);
+                }
             });
         }
 
@@ -440,7 +449,7 @@ namespace XStateNet
         /// <param name="activity">The activity to run.</param>
         /// <param name="cleanUpAction">Clean up action to be called when the state machine leaves the state.</param>
         /// <returns></returns>
-        public State WithActivity(Action activity, Action cleanUpAction = null)
+        public State WithActivity(Func<Task> activity, Action cleanUpAction = null)
         {
             if (activity != null)
             {

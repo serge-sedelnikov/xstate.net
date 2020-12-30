@@ -33,45 +33,48 @@ namespace NetState.Tests
             });
 
             // services with callback
-            state1.WithInvoke((callback) =>
+            state1.WithInvoke(async (callback) =>
             {
                 lock (lockObject)
                 {
                     serviceCount++;
                 }
-                callback("DONE");
+                await callback("DONE");
             }, () =>
             {
                 cleanupCount++;
             })
-            .WithInvoke((callback) =>
+            .WithInvoke(async (callback) =>
             {
                 lock (lockObject)
                 {
                     serviceCount++;
                 }
+                await Task.FromResult(0);
             }, () =>
             {
                 cleanupCount++;
             });
 
             // activities
-            state1.WithActivity(() =>
+            state1.WithActivity(async () =>
             {
                 lock (lockObject)
                 {
                     activityCount++;
                 }
+                await Task.FromResult(0);
             }, () =>
             {
                 activityCleanupCount++;
             })
-            .WithActivity(() =>
+            .WithActivity(async () =>
             {
                 lock (lockObject)
                 {
                     activityCount++;
                 }
+                await Task.FromResult(0);
             }, () =>
             {
                 activityCleanupCount++;
@@ -98,7 +101,7 @@ namespace NetState.Tests
             };
 
             Interpreter interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachine();
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is DONE
             await Task.Delay(1000);
@@ -120,15 +123,15 @@ namespace NetState.Tests
             bool done = false;
 
             State state1 = new State("state1");
-            state1.WithInvoke((callback) =>
+            state1.WithInvoke(async (callback) =>
             {
                 if (!failure)
-                    callback("DONE");
+                    await callback("DONE");
             })
-            .WithInvoke((callback) =>
+            .WithInvoke(async (callback) =>
             {
                 if (failure)
-                    callback("FAILED");
+                    await callback("FAILED");
             })
             .WithTransition("DONE", "doneState")
             .WithTransition("FAILED", "failStated");
@@ -154,7 +157,7 @@ namespace NetState.Tests
             };
 
             Interpreter interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachine();
+            interpreter.StartStateMachine();
 
             // TODO: wait until state machine is done
             await Task.Delay(1000);
@@ -179,11 +182,11 @@ namespace NetState.Tests
                 // this should be checked, if cancel was requested, this is optional but valuable feature
                 if (!cancel.IsCancellationRequested)
                     state1Finalized = true;
-            }, "asyncStateTransition")
+            }, "asyncStateTransition", null)
             .WithInvoke(async (callback) =>
             {
                 await Task.Delay(500);
-                callback("NORMAL_CALLBACK_CALLED");
+                await callback("NORMAL_CALLBACK_CALLED");
             })
             .WithTransition("NORMAL_CALLBACK_CALLED", "normalStateTransition")
             .WithActionOnExit(() =>
@@ -207,7 +210,7 @@ namespace NetState.Tests
 
             var machine = new StateMachine("machine1", "machine2", "state1", state1, state2, state3);
             var interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachine();
+            interpreter.StartStateMachine();
 
             await Task.Delay(3000);
             Assert.False(state1Finalized);
@@ -232,11 +235,11 @@ namespace NetState.Tests
                 // this should be checked, if cancel was requested, this is optional but valuable feature
                 if (!cancel.IsCancellationRequested)
                     state1Finalized = true;
-            }, "asyncStateTransition")
+            }, "asyncStateTransition", null)
             .WithInvoke(async (cancel) =>
             {
                 await Task.Delay(500);
-            }, "normalStateTransition")
+            }, "normalStateTransition", null)
             .WithActionOnExit(() =>
             {
                 state1CleanedUp = true;
@@ -258,7 +261,7 @@ namespace NetState.Tests
 
             var machine = new StateMachine("machine1", "machine2", "state1", state1, state2, state3);
             var interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachine();
+            interpreter.StartStateMachine();
 
             await Task.Delay(3000);
             Assert.False(state1Finalized);
@@ -280,7 +283,7 @@ namespace NetState.Tests
                 {
                     await Task.Delay(100);
                     throw new Exception("Handled exception");
-                }, "state2");
+                }, "state2", null);
 
                 State state2 = new State("state2")
                 .WithActionOnEnter(() =>
@@ -291,7 +294,7 @@ namespace NetState.Tests
 
                 var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2);
                 var interpreter = new Interpreter(machine);
-                await interpreter.StartStateMachine();
+                await interpreter.StartStateMachineAsync();
                 await Task.Delay(500);
             });
 
@@ -330,7 +333,7 @@ namespace NetState.Tests
 
             var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2, state3);
             var interpreter = new Interpreter(machine);
-            await interpreter.StartStateMachine();
+            interpreter.StartStateMachine();
             await Task.Delay(500);
 
             // as we are having on error transition in state service, next line will not be set to true
@@ -347,10 +350,10 @@ namespace NetState.Tests
             Exception error = await Assert.ThrowsAsync<FormatException>(async () =>
             {
                 State state1 = new State("state1")
-                .WithInvoke((callback) =>
+                .WithInvoke(async (callback) =>
                 {
                     int.Parse("error");
-                    callback("DONE");
+                    await callback("DONE");
                 })
                 .WithTransition("DONE", "state2");
 
@@ -363,7 +366,7 @@ namespace NetState.Tests
 
                 var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2);
                 var interpreter = new Interpreter(machine);
-                await interpreter.StartStateMachine();
+                await interpreter.StartStateMachineAsync();
                 await Task.Delay(500);
             });
 
