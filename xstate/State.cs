@@ -210,7 +210,7 @@ namespace XStateNet
             var doneEventId = Guid.NewGuid().ToString();
             var errorEventId = Guid.NewGuid().ToString();
 
-            var cancelSource = new CancellationTokenSource();
+            CancellationTokenSource cancelSource = null;
 
             // compose transitions
             this.WithTransition(doneEventId, onDoneTargetStateId);
@@ -221,6 +221,9 @@ namespace XStateNet
             // create the service with callback
             this.WithInvoke(async (callback) =>
             {
+                // make sure we have cancelation token to react on
+                // we need to have new cancelation token for each service execution
+                cancelSource = new CancellationTokenSource();
                 try
                 {
                     await asyncAction(cancelSource.Token);
@@ -276,7 +279,7 @@ namespace XStateNet
 
             var doneEventId = Guid.NewGuid().ToString();
             var errorEventId = Guid.NewGuid().ToString();
-            var cancelSource = new CancellationTokenSource();
+            CancellationTokenSource cancelSource = null;
 
             // compose transitions
             this.WithTransition(doneEventId, onDoneTargetStateId);
@@ -286,6 +289,10 @@ namespace XStateNet
 
             return this.WithInvoke(async (callback) =>
             {
+                // make sure we have cancelation token to react on
+                // we need to have new cancelation token for each service execution
+                cancelSource = new CancellationTokenSource();
+
                 var interpreter = new Interpreter(machine);
                 interpreter.OnStateMachineDone += async (sender, args) =>
                 {
