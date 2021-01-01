@@ -31,4 +31,4 @@ Work in progress! I will notify here once the version of the state machine engin
 - StateMachineInterpreter
     - ~~Can run state machine;~~
     - ~~Has event on state changed;~~
-    - Has on error event;
+    - Throws error in any case;
