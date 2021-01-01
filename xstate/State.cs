@@ -210,7 +210,7 @@ namespace XStateNet
             var doneEventId = Guid.NewGuid().ToString();
             var errorEventId = Guid.NewGuid().ToString();
 
-            var cancelSource = new CancellationTokenSource();
+            CancellationTokenSource cancelSource = null;
 
             // compose transitions
             this.WithTransition(doneEventId, onDoneTargetStateId);
@@ -221,6 +221,9 @@ namespace XStateNet
             // create the service with callback
             this.WithInvoke(async (callback) =>
             {
+                // make sure we have cancelation token to react on
+                // we need to have new cancelation token for each service execution
+                cancelSource = new CancellationTokenSource();
                 try
                 {
                     await asyncAction(cancelSource.Token);
@@ -233,6 +236,7 @@ namespace XStateNet
                     // provide the error to callback
                     if (!cancelSource.IsCancellationRequested)
                     {
+                        // provide error to be thrown in the state machine
                         await callback(errorEventId, error);
                     }
                 }
@@ -275,7 +279,7 @@ namespace XStateNet
 
             var doneEventId = Guid.NewGuid().ToString();
             var errorEventId = Guid.NewGuid().ToString();
-            var cancelSource = new CancellationTokenSource();
+            CancellationTokenSource cancelSource = null;
 
             // compose transitions
             this.WithTransition(doneEventId, onDoneTargetStateId);
@@ -285,6 +289,10 @@ namespace XStateNet
 
             return this.WithInvoke(async (callback) =>
             {
+                // make sure we have cancelation token to react on
+                // we need to have new cancelation token for each service execution
+                cancelSource = new CancellationTokenSource();
+
                 var interpreter = new Interpreter(machine);
                 interpreter.OnStateMachineDone += async (sender, args) =>
                 {
@@ -356,33 +364,14 @@ namespace XStateNet
 
             // create service and transition to go to after time delay
             return WithTransition(eventId, targetStateId)
-            .WithInvoke(async (callback) =>
+            .WithInvoke(async (cancel) =>
             {
                 // wait for delay
                 // pass token if this timeout is canceled by another service invokation
                 // NOTE!: if delay got canceled, the exception is thrown,
                 // hence we use .ContinueWith(...) to rid off unnecessary exception here.
-                await Task.Delay(delay, tokenSource.Token).ContinueWith(t => { });
-
-                // transition to another state only if token was not canceled
-                if (!tokenSource.IsCancellationRequested)
-                    await callback(eventId);
-            }, () =>
-            {
-                try
-                {
-                    // if the state is exiting because of another service invoking callback,
-                    // need to stop this timeout awaiting and exit too
-                    tokenSource.Cancel();
-                    tokenSource.Dispose();
-                }
-                catch (ObjectDisposedException error)
-                {
-                    // if this method called twise, we need to track if
-                    // token was already disposed
-                    Debug.WriteLine(error);
-                }
-            });
+                await Task.Delay(delay, cancel).ContinueWith(t => { });
+            }, targetStateId, null);
         }
 
         /// <summary>

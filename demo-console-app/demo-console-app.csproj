@@ -4,6 +4,10 @@
     <ProjectReference Include="..\xstate\xstate.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="M2Mqtt" Version="4.3.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>

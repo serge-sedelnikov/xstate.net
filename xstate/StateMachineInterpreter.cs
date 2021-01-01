@@ -63,7 +63,7 @@ namespace XStateNet
         /// </summary>
         private StateMachine _stateMachine;
 
-        private CancellationTokenSource _cancelationTokenSource;
+        private CancellationTokenSource _cancellationTokenForceMachineStop;
 
         public Interpreter(StateMachine machine)
         {
@@ -86,8 +86,8 @@ namespace XStateNet
         /// </summary>
         private void RaiseOnStateMachineDone()
         {
-            _cancelationTokenSource.Dispose();
-            _cancelationTokenSource = null;
+            _cancellationTokenForceMachineStop.Dispose();
+            _cancellationTokenForceMachineStop = null;
 
             EventHandler handler = OnStateMachineDone;
             handler?.Invoke(this, EventArgs.Empty);
@@ -108,7 +108,7 @@ namespace XStateNet
         /// <param name="machine">State machine to start.</param>
         public async Task StartStateMachineAsync()
         {
-            if (_cancelationTokenSource != null)
+            if (_cancellationTokenForceMachineStop != null)
             {
                 throw new InvalidOperationException("The state machine is already running. Wait for the state machien to exit or force it to stop.");
             }
@@ -125,7 +125,7 @@ namespace XStateNet
             }
 
             // create the cancellation token to track if state machine was forced to close.
-            _cancelationTokenSource = new CancellationTokenSource();
+            _cancellationTokenForceMachineStop = new CancellationTokenSource();
 
             // start invoking the state asyncronously
             await Invoke(initialState);
@@ -138,11 +138,11 @@ namespace XStateNet
         private async Task Invoke(State state, State previousState = null)
         {
             // check if state machine was forced to stop
-            if (_cancelationTokenSource.IsCancellationRequested)
+            if (_cancellationTokenForceMachineStop.IsCancellationRequested)
             {
                 // dispose token
-                _cancelationTokenSource.Dispose();
-                _cancelationTokenSource = null;
+                _cancellationTokenForceMachineStop.Dispose();
+                _cancellationTokenForceMachineStop = null;
                 // force to exit
                 return;
             }
@@ -232,9 +232,9 @@ namespace XStateNet
         /// </summary>
         public void ForceStopStateMachine()
         {
-            if (_cancelationTokenSource != null)
+            if (_cancellationTokenForceMachineStop != null)
             {
-                _cancelationTokenSource.Cancel();
+                _cancellationTokenForceMachineStop.Cancel();
             }
         }
     }
