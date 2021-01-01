@@ -233,6 +233,7 @@ namespace XStateNet
                     // provide the error to callback
                     if (!cancelSource.IsCancellationRequested)
                     {
+                        // provide error to be thrown in the state machine
                         await callback(errorEventId, error);
                     }
                 }
@@ -356,33 +357,14 @@ namespace XStateNet
 
             // create service and transition to go to after time delay
             return WithTransition(eventId, targetStateId)
-            .WithInvoke(async (callback) =>
+            .WithInvoke(async (cancel) =>
             {
                 // wait for delay
                 // pass token if this timeout is canceled by another service invokation
                 // NOTE!: if delay got canceled, the exception is thrown,
                 // hence we use .ContinueWith(...) to rid off unnecessary exception here.
-                await Task.Delay(delay, tokenSource.Token).ContinueWith(t => { });
-
-                // transition to another state only if token was not canceled
-                if (!tokenSource.IsCancellationRequested)
-                    await callback(eventId);
-            }, () =>
-            {
-                try
-                {
-                    // if the state is exiting because of another service invoking callback,
-                    // need to stop this timeout awaiting and exit too
-                    tokenSource.Cancel();
-                    tokenSource.Dispose();
-                }
-                catch (ObjectDisposedException error)
-                {
-                    // if this method called twise, we need to track if
-                    // token was already disposed
-                    Debug.WriteLine(error);
-                }
-            });
+                await Task.Delay(delay, cancel).ContinueWith(t => { });
+            }, targetStateId, null);
         }
 
         /// <summary>

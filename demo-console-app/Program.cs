@@ -13,10 +13,10 @@ namespace demo_console_app
         {
             
             Console.WriteLine("Demo application to demonstrate the state machien engine");
-            TrafficLight.TrafficLightDemoRunner.Run();
+            //TrafficLight.TrafficLightDemoRunner.Run();
 
             // ==================== MQTT DEMO ============================
-            
+            MqttDemo.MqttDemoRunner.Run();
 
 
             // never exit the program
