@@ -4,3 +4,5 @@
 .ionite
 .fake
 .ionide
+/__HtmlCodeCoverageReport
+/NetState.Tests/TestResults
