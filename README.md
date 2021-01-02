@@ -13,7 +13,6 @@ Work in progress! I will notify here once the version of the state machine engin
 - StateMachine
     - ~~has list of states~~;
     - ~~has initial state~~;
-    - Export state machine to JSON for visualization;
 - State
     - ~~Can Invoke Service(s) or another StateMachine~~;
     - ~~Has OnEntry actions~~;
@@ -31,7 +30,7 @@ Work in progress! I will notify here once the version of the state machine engin
 - StateMachineInterpreter
     - ~~Can run state machine;~~
     - ~~Has event on state changed;~~
-    - Throws error in any case;
+    - ~~Throws error in any case~~;
 
 
 # Generate test coverage HTML
