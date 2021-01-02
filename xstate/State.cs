@@ -89,13 +89,6 @@ namespace XStateNet
         internal List<InvokeServiceAsyncDelegate> ServiceDelegates { get => _serviceDelegates; }
 
         /// <summary>
-        /// Gets the list of clean up actions to execute on state exit.
-        /// The clean up actions are related to services or activities.
-        /// </summary>
-        /// <value></value>
-        internal Action CleanUpActions { get => _serviviceCleanupDelegates; }
-
-        /// <summary>
         /// List of activities to execute.
         /// </summary>
         /// <value></value>
@@ -417,10 +410,12 @@ namespace XStateNet
         /// <returns></returns>
         public State WithActivity(Func<Task> activity, Action cleanUpAction = null)
         {
-            if (activity != null)
+            if (activity is null)
             {
-                Activities.Add(activity);
+                throw new ArgumentNullException(nameof(activity));
             }
+
+            Activities.Add(activity);
             if (cleanUpAction != null)
             {
                 AddCleanupActionToChain(cleanUpAction);
