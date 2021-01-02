@@ -128,6 +128,7 @@ namespace demo_console_app.MqttDemo
                     Console.Write($"\r[{progressBar}] {message}");
                 }
                 progress.Stop();
+                Console.WriteLine();
             })
             .WithInvoke(async (callback) =>
             {
