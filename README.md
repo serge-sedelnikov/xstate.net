@@ -4,38 +4,16 @@
 
 Work in progress! I will notify here once the version of the state machine engine can be used in production.
 
-# xstate.net
+# XStateNet
 
-.NET implementation of the finite state machine framework.
-
-# Main classes
-
-- StateMachine
-    - ~~has list of states~~;
-    - ~~has initial state~~;
-- State
-    - ~~Can Invoke Service(s) or another StateMachine~~;
-    - ~~Has OnEntry actions~~;
-    - ~~Has OnExit actions~~;
-    - ~~Can be a final state;~~
-    - ~~Can be a transient state~~;
-    - ~~Can have a delayed (timeout) transition~~;
-- Service
-    - ~~Executes while machine in the state, can change state via callback("name");~~
-    - ~~has OnDone transition in case of service is async;~~
-    - ~~has OnError transition in case of service is async~~
-- Action
-    - ~~Fire and forget Action~~
-- Activity
-- StateMachineInterpreter
-    - ~~Can run state machine;~~
-    - ~~Has event on state changed;~~
-    - ~~Throws error in any case~~;
+.NET implementation of the finite state machine framework. Powerful and asynchronous framework to build and run finite state machines in .NET.
 
 
 # Generate test coverage HTML
 
 Open terminal in the project root directory. First, collect XPlat Code Coverage into XML file.
+
+> To collect code coverage on any platform that is supported by .NET Core, install [Coverlet](https://github.com/coverlet-coverage/coverlet/blob/master/README.md) and use the --collect:"XPlat Code Coverage" option.
 
 ```sh
 dotnet test --collect:"XPlat Code Coverage"

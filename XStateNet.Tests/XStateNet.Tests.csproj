@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\xstate\xstate.csproj" />
+    <ProjectReference Include="..\XStateNet\XStateNet.csproj" />
   </ItemGroup>
 
 </Project>
