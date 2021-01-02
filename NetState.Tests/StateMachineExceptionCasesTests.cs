@@ -198,7 +198,7 @@ namespace NetState.Tests
                 service1Canceled = cancel.IsCancellationRequested;
             }, "finalState", null)
             .WithInvoke(async (cancel) => {
-                await Task.Delay(2000, cancel);
+                await Task.Delay(200, cancel);
                 service2Canceled = cancel.IsCancellationRequested;
             }, "finalState", null);
 
