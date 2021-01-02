@@ -279,7 +279,6 @@ namespace XStateNet
 
             var doneEventId = Guid.NewGuid().ToString();
             var errorEventId = Guid.NewGuid().ToString();
-            CancellationTokenSource cancelSource = null;
 
             // compose transitions
             this.WithTransition(doneEventId, onDoneTargetStateId);
@@ -287,41 +286,19 @@ namespace XStateNet
             // compose transition to run on error case
             this.WithTransition(errorEventId, onErrorTargetStateId);
 
-            return this.WithInvoke(async (callback) =>
+            return this.WithInvoke(async (cancel) =>
             {
-                // make sure we have cancelation token to react on
-                // we need to have new cancelation token for each service execution
-                cancelSource = new CancellationTokenSource();
-
                 var interpreter = new Interpreter(machine);
-                interpreter.OnStateMachineDone += async (sender, args) =>
-                {
-                    await callback(doneEventId);
-                };
 
-                cancelSource.Token.Register(() =>
+                // if this service got canceled by another service switching state
+                // need to stop the machine execution.
+                cancel.Register(() =>
                 {
                     interpreter.ForceStopStateMachine();
                 });
 
                 await interpreter.StartStateMachineAsync();
-            }, () =>
-            {
-                // if the service was canceled by another service switch, use it here
-                try
-                {
-                    cancelSource.Cancel();
-                    cancelSource.Dispose();
-                }
-                catch (ObjectDisposedException error)
-                {
-                    // this error is expected if the cleanup method called twise, 
-                    // ignore it here, but throw on any other exception.
-                    // the coce can be called twise when another service exits and calls all cleanup code
-                    // and then self service exits and calls same clean up code.
-                    Debug.WriteLine(error);
-                }
-            });
+            }, onDoneTargetStateId, onErrorTargetStateId);
         }
 
         /// <summary>

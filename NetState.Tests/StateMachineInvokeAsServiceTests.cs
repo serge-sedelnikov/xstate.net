@@ -123,7 +123,7 @@ namespace NetState.Tests
             bool childState1Called = false;
             bool childFinalStateCalled = false;
             bool state2Called = false;
-            
+
             // ==================compose host state machine==================
 
             var error = await Assert.ThrowsAnyAsync<Exception>(async () =>
@@ -172,6 +172,67 @@ namespace NetState.Tests
             Assert.False(childFinalStateCalled);
             Assert.False(state2Called);
             Assert.NotNull(error);
+        }
+
+        [Fact]
+        public async Task ExecuteStateMachineAsService_NoErrorMoveToErrorState()
+        {
+            bool childState1Called = false;
+            bool childFinalStateCalled = false;
+            bool state2Called = false;
+            bool errorStateCalled = false;
+            
+
+            // compose service state machine
+            State childState1 = new State("childState1");
+            childState1.WithInvoke(async (callback) =>
+            {
+                childState1Called = true;
+                int.Parse("error");
+                await callback("DONE");
+            })
+            .WithTransition("DONE", "childFinalState");
+
+            State childFinalState = new State("childFinalState")
+            .AsFinalState()
+            .WithInvoke(async (cancel) =>
+            {
+                await Task.FromResult(0);
+                childFinalStateCalled = true;
+            }, null, null);
+            var childMachine = new StateMachine("childMachine", "childMachine", childState1.Id,
+            childState1, childFinalState);
+
+
+            // ==================compose host state machine==================
+
+            State state1 = new State("state1");
+            state1.WithInvoke(childMachine, "state2", "errorState");
+
+            State state2 = new State("state2")
+            .AsFinalState()
+            .WithInvoke(async (cancel) =>
+            {
+                await Task.FromResult(0);
+                state2Called = true;
+            }, null, null);
+
+            State errorState = new State("errorState")
+            .WithInvoke(async (cancel) => {
+                errorStateCalled = true;
+                await Task.FromResult(0);
+            }, null, null)
+            .AsFinalState();
+
+
+            var machine = new StateMachine("machine1", "machine 1", "state1", state1, state2, errorState);
+            var interpreter = new Interpreter(machine);
+            await interpreter.StartStateMachineAsync();
+
+            Assert.True(childState1Called);
+            Assert.False(childFinalStateCalled);
+            Assert.False(state2Called);
+            Assert.True(errorStateCalled);
         }
     }
 }
