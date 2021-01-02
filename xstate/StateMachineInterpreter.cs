@@ -210,6 +210,14 @@ namespace XStateNet
                 return;
             }
 
+            // if state ts final and it does not have any services
+            // call callback
+            if(!state.ServiceDelegates.Any() && state.Mode == StateMode.Final)
+            {
+                await callback("");
+                return;
+            }
+
             // execute all services in parallel
             var services = state.ServiceDelegates.Select(d =>
             {

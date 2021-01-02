@@ -4,3 +4,5 @@
 .ionite
 .fake
 .ionide
+/coveragereport
+/NetState.Tests/TestResults

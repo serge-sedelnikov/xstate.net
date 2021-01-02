@@ -241,5 +241,42 @@ namespace NetState.Tests
             }
             Assert.False(stopwatch.IsRunning);
         }
+
+        [Fact]
+        public async Task TransientState_Run()
+        {
+            bool state1Entered = false;
+            bool state1Exited = false;
+            bool state2Entered = false;
+            bool state2Exited = false;
+
+            State state1 = new State("state1")
+            .AsTransientState("state2")
+            .WithActionOnEnter(() => {
+                state1Entered = true;
+            })
+            .WithActionOnExit(() => {
+                state1Exited = true;
+            });
+
+            State state2 = new State("state2")
+            .AsFinalState()
+            .WithActionOnEnter(() => {
+                state2Entered = true;
+            })
+            .WithActionOnExit(() => {
+                state2Exited = true;
+            });
+
+            var machine = new StateMachine("machine1", "machine1", "state1", 
+            state1, state2);
+            var interpreter = new Interpreter(machine);
+            await interpreter.StartStateMachineAsync();
+
+            Assert.True(state1Entered);
+            Assert.True(state1Exited);
+            Assert.True(state2Entered);
+            Assert.True(state2Exited);
+        }
     }
 }
