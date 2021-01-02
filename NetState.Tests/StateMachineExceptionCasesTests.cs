@@ -181,5 +181,37 @@ namespace NetState.Tests
                 await interpreter.StartStateMachineAsync();
             });
         }
+
+        [Fact]
+        public async Task CancelationTokenAsyncService_DoubleExecution_NoError()
+        {
+            bool service1Canceled = false;
+            bool service2Canceled = false;
+
+            // if two services are running and one switches the state,
+            // another one is canceled by cancel token and cleanup methods are called twise.
+            // here we need to handle this case
+            State state1 = new State("state1")
+            .WithInvoke(async (cancel) => {
+                // continue with prevents task.delay to throw exception on cancel
+                await Task.Delay(60000, cancel).ContinueWith((t) => {});
+                service1Canceled = cancel.IsCancellationRequested;
+            }, "finalState", null)
+            .WithInvoke(async (cancel) => {
+                await Task.Delay(2000, cancel);
+                service2Canceled = cancel.IsCancellationRequested;
+            }, "finalState", null);
+
+
+            State finalState = new State("finalState")
+            .AsFinalState();
+
+            var machine = new StateMachine("machine1", "machine 1", "state1", state1, finalState);
+            var interpreter = new Interpreter(machine);
+            await interpreter.StartStateMachineAsync();
+            // no exceptions are expected
+            Assert.True(service1Canceled);
+            Assert.False(service2Canceled);
+        }
     }
 }

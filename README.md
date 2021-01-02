@@ -37,6 +37,8 @@ Work in progress! I will notify here once the version of the state machine engin
 
 Open terminal in the project root directory. First, collect XPlat Code Coverage into XML file.
 
+> To collect code coverage on any platform that is supported by .NET Core, install [Coverlet](https://github.com/coverlet-coverage/coverlet/blob/master/README.md) and use the --collect:"XPlat Code Coverage" option.
+
 ```sh
 dotnet test --collect:"XPlat Code Coverage"
 ```

@@ -221,7 +221,9 @@ namespace XStateNet
                 {
                     await asyncAction(cancelSource.Token);
                     if (!cancelSource.IsCancellationRequested)
+                    {
                         await callback(doneEventId);
+                    }
                 }
                 catch (Exception error)
                 {
@@ -235,21 +237,8 @@ namespace XStateNet
                 }
             }, () =>
             {
-                // if the service was canceled by another service switch, use it here
-                try
-                {
-                    // if this service execution was canceled by other service, mark it as canceled
-                    cancelSource.Cancel();
-                    cancelSource.Dispose();
-                }
-                catch (ObjectDisposedException error)
-                {
-                    // this error is expected if the cleanup method called twise, 
-                    // ignore it here, but throw on any other exception.
-                    // the coce can be called twise when another service exits and calls all cleanup code
-                    // and then self service exits and calls same clean up code.
-                    Debug.WriteLine(error);
-                }
+                cancelSource.Cancel();
+                cancelSource.Dispose();
             });
 
             // return current state to be able to chain up the services.
