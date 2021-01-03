@@ -213,9 +213,39 @@ Find the Nuget package here:
 
 The library is targeted for `netstandard2.0` and for `net5.0`, feel free to comment or open an issue in case any other compatibility is needed. Those two target frameworks should cover most of the development needs.
 
-# Build
+# Manual Build
+
+In case you don't want to use Nuget package, you can manually build the library for Debug or Release.
+
+Navigate to the folder `XStateNet`, run
+
+```sh
+dotnet build
+```
+
+or for Release build
+
+```sh
+dotnet build -c Release
+```
+
+The only library you need to reference to your project is `XStateNet.dll`. Depending on your project target, reference the correct target framework built dll.
+
+![the build result](/Readme_Images/the_build_result.png)
 
 # Test
+
+The the root project folder, run
+
+```sh
+dotnet test
+```
+
+or for verbose results (normal level of console output)
+
+```sh
+dotnet test -v n
+```
 
 # Generate Test Coverage HTML
 
