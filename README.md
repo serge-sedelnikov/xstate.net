@@ -38,6 +38,14 @@ It can await until state machine is done, or subscribe for event in case the sta
 
 Simple example that uses callback services and no side effects.
 
+First, add namespace using directives:
+
+```cSharp
+using XStateNet;
+```
+
+Then you can use classes from the library.
+
 ```cSharp
 // create all needed states for traffic light
 State redLight = new State("redLight");
@@ -161,7 +169,7 @@ Green light! Go go go!
 
 Notice, that there was an error state switch and one attempt to fix error. State machine works as expected.
 
-> More examples: loot at the documentation or in the "demo-console-app" folder.
+> More examples: look at the documentation or in the "demo-console-app" folder.
 
 # Good practice
 
