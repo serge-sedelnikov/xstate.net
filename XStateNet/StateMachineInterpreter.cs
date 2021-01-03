@@ -175,7 +175,8 @@ namespace XStateNet
                 }
 
                 // check next state
-                var nextStateId = state.Transitions.GetValueOrDefault(eventId);
+                string nextStateId = "";
+                state.Transitions.TryGetValue(eventId, out nextStateId);
                 if (string.IsNullOrEmpty(nextStateId))
                 {
                     // if there is no next state id, warn developer about it

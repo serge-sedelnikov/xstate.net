@@ -17,8 +17,7 @@ namespace demo_console_app
 
             // ==================== MQTT DEMO ============================
             MqttDemo.MqttDemoRunner.Run();
-
-
+            
             // never exit the program
             while (true)
             {

@@ -104,14 +104,14 @@ namespace demo_console_app.MqttDemo
 
             // =====================================================================
 
-            var doorOpenTimeout = TimeSpan.FromSeconds(5);
+            var doorOpenTimeout = TimeSpan.FromSeconds(10);
             State waitingUserToOpenTheDoor = new State("waitingUserToOpenTheDoor")
             .WithTimeout(doorOpenTimeout, "userDidNotOpenTheDoor")
-            .WithActivity(async () => {
-                // indicate 30 sec progress bar
+            .WithInvoke(async (cancel) => {
+                // indicate X sec progress bar
                 var progress = new Stopwatch();
                 progress.Start();
-                while(progress.Elapsed < doorOpenTimeout)
+                while(!cancel.IsCancellationRequested)
                 {
                     await Task.Delay(100);
                     double elapsedPercent = Math.Floor(100 * progress.ElapsedMilliseconds / doorOpenTimeout.TotalMilliseconds);
@@ -127,9 +127,9 @@ namespace demo_console_app.MqttDemo
                     }
                     Console.Write($"\r[{progressBar}] {message}");
                 }
-                progress.Stop();
                 Console.WriteLine();
-            })
+                progress.Stop();
+            }, null, null)
             .WithInvoke(async (callback) =>
             {
                 await Task.FromResult(0);
