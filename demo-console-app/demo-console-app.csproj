@@ -2,10 +2,7 @@
 
   <ItemGroup>
     <PackageReference Include="M2Mqtt" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\XStateNet\XStateNet.csproj" />
+    <PackageReference Include="XStateNet" Version="1.0.2" />
   </ItemGroup>
 
   <PropertyGroup>
