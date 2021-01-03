@@ -1,6 +1,7 @@
-![.NET](https://github.com/serge-sedelnikov/xstate.net/workflows/.NET/badge.svg?branch=main)
 
-![logo](/Readme_Images/logo.png)
+![logo](/Readme_Images/logo.png) 
+
+![.NET](https://github.com/serge-sedelnikov/xstate.net/workflows/.NET/badge.svg?branch=main) ![nuget package version](https://img.shields.io/nuget/v/XStateNet)
 
 # XStateNet
 
