@@ -10,10 +10,12 @@
     <!-- Nuget package properties -->
     <PropertyGroup>
         <PackageId>XStateNet</PackageId>
-        <Version>1.0.0</Version>
+        <Version>1.0.1-alpha</Version>
         <Authors>Sergey Sedelnikov</Authors>
         <Company>Sergey Sedelnikov</Company>
         <Title>XStateNet - Finite State Machine Framework for .NET</Title>
+        <Copyright>Sergey Sedelnikov</Copyright>
+        <Summary>.NET implementation of the finite state machine framework. Powerful and asynchronous framework to build and run finite state machines in .NET.</Summary>
         <Description>
             .NET implementation of the finite state machine framework. Powerful and asynchronous framework to build and run finite state machines in .NET.
 
@@ -26,11 +28,14 @@
         </Description>
         <ProjectUrl>https://github.com/serge-sedelnikov/xstate.net</ProjectUrl>
         <Tags>state machine;finite state machine;states;uml;state charts;state disgram;</Tags>
-        <PackageIcon>https://github.com/serge-sedelnikov/xstate.net/main/Readme_Images/logo.png</PackageIcon>
-        <PackageIconUrl>logo.png</PackageIconUrl>
+        <PackageIcon>logo.png</PackageIcon>
+        <PackageIconUrl>https://raw.githubusercontent.com/serge-sedelnikov/xstate.net/main/Readme_Images/logo.png</PackageIconUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/serge-sedelnikov/xstate.net</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
     </PropertyGroup>
     <!-- END Nuget package properties -->
     <ItemGroup>
-        <None Include="../Readme_Images/logo.png" Pack="true" PackagePath="\"/>
+        <None Include="../Readme_Images/logo.png" Pack="true" PackagePath="/"/>
     </ItemGroup>
 </Project>

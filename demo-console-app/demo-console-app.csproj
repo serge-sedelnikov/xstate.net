@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\XStateNet\XStateNet.csproj" />
+    <PackageReference Include="M2Mqtt" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="M2Mqtt" Version="4.3.0" />
+    <ProjectReference Include="..\XStateNet\XStateNet.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

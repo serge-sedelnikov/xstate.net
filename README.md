@@ -1,6 +1,7 @@
-![.NET](https://github.com/serge-sedelnikov/xstate.net/workflows/.NET/badge.svg?branch=main)
 
-![logo](/Readme_Images/logo.png)
+![logo](/Readme_Images/logo.png) 
+
+![.NET](https://github.com/serge-sedelnikov/xstate.net/workflows/.NET/badge.svg?branch=main) ![nuget package version](https://img.shields.io/nuget/v/XStateNet)
 
 # XStateNet
 
@@ -218,7 +219,7 @@ class ShowingRedLight : State
 
 Find the Nuget package here:
 
-[TODO: Add nuget package link here](/)
+[https://www.nuget.org/packages/XStateNet](https://www.nuget.org/packages/XStateNet)
 
 The library is targeted for `netstandard2.0` and for `net5.0`, feel free to comment or open an issue in case any other compatibility is needed. Those two target frameworks should cover most of the development needs.
 
