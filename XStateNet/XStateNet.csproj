@@ -7,4 +7,30 @@
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <Deterministic>false</Deterministic>
     </PropertyGroup>
+    <!-- Nuget package properties -->
+    <PropertyGroup>
+        <PackageId>XStateNet</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Sergey Sedelnikov</Authors>
+        <Company>Sergey Sedelnikov</Company>
+        <Title>XStateNet - Finite State Machine Framework for .NET</Title>
+        <Description>
+            .NET implementation of the finite state machine framework. Powerful and asynchronous framework to build and run finite state machines in .NET.
+
+            Main features:
+
+            1. Declarative state machine building and running in asynchronous mode, with awaiting or without (non blocking the main thread);
+            2. States can execute delegate with callback to generate multiple events and have various state switch transitions, as well as asynchronous actions to switch state on action done or error; Each service can execute also another state machine and move to another state on machine done or error;
+            3. Side effects for each state: actions on state enter, on state exit. Activities - long running awaitable and task with cleanup method that runs while machine is in the certain state but that action can't affect state machine.
+            4. Additional service types and modes for state: transient state, timeout service, final state;
+        </Description>
+        <ProjectUrl>https://github.com/serge-sedelnikov/xstate.net</ProjectUrl>
+        <Tags>state machine;finite state machine;states;uml;state charts;state disgram;</Tags>
+        <PackageIcon>https://github.com/serge-sedelnikov/xstate.net/main/Readme_Images/logo.png</PackageIcon>
+        <PackageIconUrl>logo.png</PackageIconUrl>
+    </PropertyGroup>
+    <!-- END Nuget package properties -->
+    <ItemGroup>
+        <None Include="../Readme_Images/logo.png" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 </Project>
