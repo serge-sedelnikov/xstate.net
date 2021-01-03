@@ -1,5 +1,6 @@
 ![.NET](https://github.com/serge-sedelnikov/xstate.net/workflows/.NET/badge.svg?branch=main)
 
+![logo](/Readme_Images/logo.png)
 
 # XStateNet
 
