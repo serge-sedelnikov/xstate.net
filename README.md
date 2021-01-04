@@ -14,6 +14,19 @@
 3. Side effects for each state: actions on state enter, on state exit. Activities - long running awaitable and task with cleanup method that runs while machine is in the certain state but that action can't affect state machine.
 4. Additional service types and modes for state: transient state, timeout service, final state;
 
+# Documentation
+
+[Read Wiki pages here](https://github.com/serge-sedelnikov/xstate.net/wiki)
+
+# Nuget Package
+
+Find the Nuget package here:
+
+[https://www.nuget.org/packages/XStateNet](https://www.nuget.org/packages/XStateNet)
+
+The library is targeted for `netstandard2.0` and for `net5.0`, feel free to comment or open an issue in case any other compatibility is needed. Those two target frameworks should cover most of the development needs.
+
+
 # Main Classes
 
 ## State
@@ -210,18 +223,6 @@ class ShowingRedLight : State
     }
 }
 ```
-
-# Documentation
-
-[TODO: Add the documentation link here](/)
-
-# Nuget Package
-
-Find the Nuget package here:
-
-[https://www.nuget.org/packages/XStateNet](https://www.nuget.org/packages/XStateNet)
-
-The library is targeted for `netstandard2.0` and for `net5.0`, feel free to comment or open an issue in case any other compatibility is needed. Those two target frameworks should cover most of the development needs.
 
 # Manual Build
 
