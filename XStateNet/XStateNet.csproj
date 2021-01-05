@@ -6,6 +6,7 @@
     <PropertyGroup>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <Deterministic>false</Deterministic>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
     <!-- Nuget package properties -->
     <PropertyGroup>
