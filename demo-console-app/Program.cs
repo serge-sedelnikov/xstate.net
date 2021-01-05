@@ -29,10 +29,5 @@ namespace demo_console_app
             }
 
         }
-
-        public void Demo()
-        {
-            
-        }
     }
 }
