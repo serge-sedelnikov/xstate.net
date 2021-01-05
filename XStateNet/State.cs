@@ -169,7 +169,7 @@ namespace XStateNet
         /// <summary>
         /// Invokes the service as async method.
         /// </summary>
-        /// <param name="invoke">The service to invoke.</param>
+        /// <param name="invokeAsync">The service to invoke.</param>
         /// <returns></returns>
         public State WithInvoke(InvokeServiceAsyncDelegate invokeAsync, Action cleanUpAction = null)
         {

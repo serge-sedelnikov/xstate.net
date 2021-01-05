@@ -63,6 +63,9 @@ namespace XStateNet
         /// </summary>
         private StateMachine _stateMachine;
 
+        /// <summary>
+        /// Internal token to track in case of state machine was forced to stop.
+        /// </summary>
         private CancellationTokenSource _cancellationTokenForceMachineStop;
 
         public Interpreter(StateMachine machine)
