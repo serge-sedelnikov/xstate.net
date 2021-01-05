@@ -11,7 +11,7 @@
     <!-- Nuget package properties -->
     <PropertyGroup>
         <PackageId>XStateNet</PackageId>
-        <Version>1.0.2</Version>
+        <Version>1.0.3</Version>
         <Authors>Sergey Sedelnikov</Authors>
         <Company>Sergey Sedelnikov</Company>
         <Title>XStateNet - Finite State Machine Framework for .NET</Title>

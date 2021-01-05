@@ -104,7 +104,7 @@ namespace XStateNet
         /// <summary>
         /// The service action to be executed on async service with optional cancellation token.
         /// </summary>
-        /// <param name="cancellationTokenSource"></param>
+        /// <param name="cancellationToken">Token to check if service need to be cancelled.</param>
         /// <returns></returns>
         public delegate Task AsyncCancelableAction(CancellationToken cancellationToken);
 
@@ -170,6 +170,7 @@ namespace XStateNet
         /// Invokes the service as async method.
         /// </summary>
         /// <param name="invokeAsync">The service to invoke.</param>
+        /// <param name="cleanUpAction">the action is called to clean up resources when state exits.</param>
         /// <returns></returns>
         public State WithInvoke(InvokeServiceAsyncDelegate invokeAsync, Action cleanUpAction = null)
         {
