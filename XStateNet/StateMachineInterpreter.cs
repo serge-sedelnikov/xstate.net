@@ -68,6 +68,10 @@ namespace XStateNet
         /// </summary>
         private CancellationTokenSource _cancellationTokenForceMachineStop;
 
+        /// <summary>
+        /// Creates an instance of the interpreter.
+        /// </summary>
+        /// <param name="machine">State machine to interpret.</param>
         public Interpreter(StateMachine machine)
         {
             _stateMachine = machine ?? throw new ArgumentNullException(nameof(machine));
@@ -99,7 +103,6 @@ namespace XStateNet
         /// <summary>
         /// Starts the state machine.
         /// </summary>
-        /// <param name="machine">State machine to start.</param>
         public async void StartStateMachine()
         {
             await StartStateMachineAsync();
@@ -108,7 +111,6 @@ namespace XStateNet
         /// <summary>
         /// Starts the state machine.
         /// </summary>
-        /// <param name="machine">State machine to start.</param>
         public async Task StartStateMachineAsync()
         {
             if (_cancellationTokenForceMachineStop != null)
@@ -137,7 +139,8 @@ namespace XStateNet
         /// <summary>
         /// Invokes one state.
         /// </summary>
-        /// <param name="state"></param>
+        /// <param name="state">State to invoke.</param>
+        /// <param name="previousState">Previous state to include to OnStateChangedEvent args.</param>
         private async Task Invoke(State state, State previousState = null)
         {
             // check if state machine was forced to stop
