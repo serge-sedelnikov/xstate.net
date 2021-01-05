@@ -16,7 +16,9 @@
 
 # Documentation
 
-[Read Wiki pages here](https://github.com/serge-sedelnikov/xstate.net/wiki)
+> Documentation work in progress!
+
+[Read Wiki pages here](https://xstatenetdocs.z6.web.core.windows.net)
 
 # Nuget Package
 
