@@ -7,7 +7,8 @@ module.exports = {
     ],
     Services: [
       '03.ServiceAsAsyncCallback',
-      '04.ServiceAsAwaitableTask'
+      '04.ServiceAsAwaitableTask',
+      '05.ServiceAsStateMachine'
     ]
   }
 };
