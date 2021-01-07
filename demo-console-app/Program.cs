@@ -19,7 +19,7 @@ namespace demo_console_app
 
             // ==================== MQTT DEMO ============================
             //MqttDemo.MqttDemoRunner.Run();
-
+            
             // never exit the program
             while (true)
             {
@@ -27,7 +27,6 @@ namespace demo_console_app
                 // is executed and interpreted in own thread.
                 Console.ReadLine();
             }
-
         }
     }
 }

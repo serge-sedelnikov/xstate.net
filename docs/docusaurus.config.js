@@ -1,13 +1,13 @@
 module.exports = {
-  title: 'My Site',
-  tagline: 'The tagline of my site',
-  url: 'https://your-docusaurus-test-site.com',
+  title: 'XStateNet',
+  tagline: '.NET Finite State Machine',
+  url: 'https://xstatenetdocs.z6.web.core.windows.net/',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'serge-sedelnikov', // Usually your GitHub org/user name.
+  projectName: 'XStateNet', // Usually your repo name.
   themeConfig: {
     prism: {
       additionalLanguages: ['csharp'],

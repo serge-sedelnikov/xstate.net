@@ -1,5 +1,5 @@
 module.exports = {
-  someSidebar: {
+  mainSideBar: {
     Introduction: [
       '01.XStateNet', 
       '02.StateMachineIdeas',
@@ -9,6 +9,8 @@ module.exports = {
       '03.ServiceAsAsyncCallback',
       '04.ServiceAsAwaitableTask',
       '05.ServiceAsStateMachine'
-    ]
-  }
+    ],
+    Actions: ['06.Actions']
+  },
+  
 };
