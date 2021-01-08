@@ -10,7 +10,10 @@ module.exports = {
       '04.ServiceAsAwaitableTask',
       '05.ServiceAsStateMachine'
     ],
-    Actions: ['06.Actions']
+    Actions: ['06.Actions'],
+    Activities: [
+      '07.ActivitiesClassic'
+    ]
   },
   
 };
