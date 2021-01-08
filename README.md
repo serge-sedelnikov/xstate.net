@@ -16,9 +16,9 @@
 
 # Documentation
 
-> Documentation work in progress!
+Find the more detailed library description and usage guides here:
 
-[Read Wiki pages here](https://xstatenetdocs.z6.web.core.windows.net)
+[https://xstatenetdocs.z6.web.core.windows.net](https://xstatenetdocs.z6.web.core.windows.net)
 
 # Nuget Package
 
