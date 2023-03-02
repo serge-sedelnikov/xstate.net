@@ -8,6 +8,13 @@ module.exports = {
   favicon: 'img/favicon.ico',
   organizationName: 'serge-sedelnikov', // Usually your GitHub org/user name.
   projectName: 'XStateNet', // Usually your repo name.
+  scripts: [
+    {
+      src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6340477093933407',
+      async: true,
+      crossorigin: 'anonymous'
+    }
+  ],
   themeConfig: {
     prism: {
       additionalLanguages: ['csharp'],
@@ -48,7 +55,7 @@ module.exports = {
     [
       '@docusaurus/preset-classic',
       {
-        editable: false,
+        // editable: false,
         docs: {
           routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.js'),
@@ -57,7 +64,7 @@ module.exports = {
           //   'https://github.com/serge-sedelnikov/xstate.net/wiki',
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: [require.resolve('./src/css/custom.css')],
         },
       },
     ],
