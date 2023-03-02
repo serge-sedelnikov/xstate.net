@@ -9,6 +9,18 @@ module.exports = {
   organizationName: 'serge-sedelnikov', // Usually your GitHub org/user name.
   projectName: 'XStateNet', // Usually your repo name.
   themeConfig: {
+    algolia: {
+      apiKey: '03edfd7c0d82d9920877b8796920ca35',
+      indexName: 'xstatenetdocs',
+
+      // Optional: see doc section bellow
+      contextualSearch: true,
+
+      // Optional: Algolia search parameters
+      searchParameters: {},
+
+      //... other Algolia params
+    },
     prism: {
       additionalLanguages: ['csharp'],
     },
