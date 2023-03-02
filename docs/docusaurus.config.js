@@ -9,6 +9,13 @@ module.exports = {
   organizationName: 'serge-sedelnikov', // Usually your GitHub org/user name.
   projectName: 'XStateNet', // Usually your repo name.
   themeConfig: {
+    scripts: [
+      {
+        src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6340477093933407',
+        async: true,
+        crossorigin: 'anonymous'
+      }
+    ],
     algolia: {
       apiKey: '03edfd7c0d82d9920877b8796920ca35',
       indexName: 'xstatenetdocs',
